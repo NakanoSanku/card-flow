@@ -170,23 +170,25 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
 
   return (
     <div className="container mx-auto px-2 py-12">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
-          Insider Flow
-        </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-          A minimalist masonry card site for your prompts, scripts, and apps.
-          Markdown driven, no database required.
-        </p>
-      </header>
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#f7f9fb] via-white to-white dark:from-[#0d0f14] dark:via-[#0d0f14] dark:to-[#0d0f14] px-4 sm:px-6 md:px-8 py-10 mb-10">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
+            Insider Flow
+          </h1>
+          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+            A minimalist masonry card site for your prompts, scripts, and apps.
+            Markdown driven, no database required.
+          </p>
+        </header>
 
-      <Search posts={initialPosts} onSearch={handleSearch} />
+        <Search posts={initialPosts} onSearch={handleSearch} />
 
-      <FilterBar
-        types={allTypes}
-        selectedType={selectedType}
-        onSelectType={setSelectedType}
-      />
+        <FilterBar
+          types={allTypes}
+          selectedType={selectedType}
+          onSelectType={setSelectedType}
+        />
+      </section>
 
       <div className="flex gap-4">
         {columns.map((columnPosts, columnIndex) => (
