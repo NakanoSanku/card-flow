@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Copy,
   Star,
-  GitFork,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -178,6 +177,85 @@ export default function Card({
   const displayTitle =
     type === "github" && githubTitle ? githubTitle : title;
 
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const blocks = Array.from(
+      card.querySelectorAll<HTMLElement>("[data-code-block]"),
+    );
+
+    const cleanups: (() => void)[] = [];
+
+    blocks.forEach((block) => {
+      const body = block.querySelector<HTMLElement>("[data-code-body]");
+      const fade = block.querySelector<HTMLElement>("[data-code-fade]");
+      const toggleButton = block.querySelector<HTMLButtonElement>(
+        "[data-action='toggle']",
+      );
+      const copyButton = block.querySelector<HTMLButtonElement>(
+        "[data-action='copy']",
+      );
+
+      const collapsedMaxHeight = 16 * 16;
+
+      const setExpanded = (expanded: boolean) => {
+        const isOverflowing = body
+          ? body.scrollHeight > collapsedMaxHeight
+          : false;
+
+        if (body) {
+          body.style.maxHeight =
+            expanded || !isOverflowing ? "none" : "16rem";
+        }
+        if (fade) {
+          const shouldHideFade = expanded || !isOverflowing;
+          fade.style.opacity = shouldHideFade ? "0" : "1";
+          fade.style.visibility = shouldHideFade ? "hidden" : "visible";
+        }
+        if (toggleButton) {
+          toggleButton.textContent = expanded ? "Collapse" : "Expand";
+          toggleButton.style.display = isOverflowing ? "inline-flex" : "none";
+        }
+        block.setAttribute("data-expanded", expanded ? "true" : "false");
+      };
+
+      setExpanded(false);
+
+      if (toggleButton) {
+        const handleToggle = () => {
+          const expanded = block.getAttribute("data-expanded") === "true";
+          setExpanded(!expanded);
+        };
+        toggleButton.addEventListener("click", handleToggle);
+        cleanups.push(() => toggleButton.removeEventListener("click", handleToggle));
+      }
+
+      if (copyButton) {
+        const originalLabel = copyButton.textContent || "Copy";
+        const handleCopyClick = () => {
+          const code = block.querySelector("code");
+          const text = code?.textContent || "";
+          if (!text || !navigator.clipboard) return;
+
+          navigator.clipboard.writeText(text);
+          copyButton.textContent = "Copied!";
+          setTimeout(() => {
+            copyButton.textContent = originalLabel;
+          }, 1500);
+        };
+        copyButton.addEventListener("click", handleCopyClick);
+        cleanups.push(() =>
+          copyButton.removeEventListener("click", handleCopyClick),
+        );
+      }
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, [content]);
+
   return (
     <div
       ref={cardRef}
@@ -305,10 +383,6 @@ export default function Card({
                 <span className="inline-flex items-center gap-1">
                   <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
                   <span className="tabular-nums">{githubRepo?.stargazers_count.toLocaleString()}</span>
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span className="tabular-nums">{githubRepo?.forks_count.toLocaleString()}</span>
                 </span>
               </div>
             </div>
