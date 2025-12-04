@@ -65,6 +65,7 @@ export default function Card({
   wingetUnsupported,
 }: CardProps) {
   const [copied, setCopied] = useState(false);
+  const [githubTitle, setGithubTitle] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
   const getAutoIconUrl = (link?: string | null): string | null => {
@@ -171,6 +172,9 @@ export default function Card({
     onSelectedChange(!selected);
   };
 
+  const displayTitle =
+    type === "github" && githubTitle ? githubTitle : title;
+
   return (
     <div
       ref={cardRef}
@@ -189,7 +193,7 @@ export default function Card({
             </div>
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
-                {title}
+                {displayTitle}
               </h3>
               {date && (
                 <p className="text-xs text-zinc-500 mt-0.5">
@@ -217,7 +221,9 @@ export default function Card({
       )}
 
       <div className="p-4 pt-2 flex-1">
-        {type === "github" && url && <GithubRepoInfo url={url} />}
+        {type === "github" && url && (
+          <GithubRepoInfo url={url} onLoaded={(data) => setGithubTitle(data.full_name)} />
+        )}
 
         <div
           className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"

@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-interface GithubRepoInfoProps {
-    url: string;
-}
+import { Star, GitFork, CircleDot } from 'lucide-react';
 
 interface GithubRepoData {
     full_name: string;
@@ -14,7 +11,12 @@ interface GithubRepoData {
     html_url: string;
 }
 
-export default function GithubRepoInfo({ url }: GithubRepoInfoProps) {
+interface GithubRepoInfoProps {
+    url: string;
+    onLoaded?: (repo: GithubRepoData) => void;
+}
+
+export default function GithubRepoInfo({ url, onLoaded }: GithubRepoInfoProps) {
     const [repo, setRepo] = useState<GithubRepoData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,18 +34,21 @@ export default function GithubRepoInfo({ url }: GithubRepoInfoProps) {
             let cancelled = false;
 
             fetch(apiUrl)
-                .then(res => {
+                .then((res) => {
                     if (!res.ok) {
                         throw new Error(`GitHub API error: ${res.status}`);
                     }
                     return res.json();
                 })
-                .then(data => {
+                .then((data: GithubRepoData) => {
                     if (!cancelled) {
                         setRepo(data);
+                        if (onLoaded) {
+                            onLoaded(data);
+                        }
                     }
                 })
-                .catch(err => {
+                .catch((err: Error) => {
                     if (!cancelled) {
                         setError(err.message);
                     }
@@ -55,38 +60,46 @@ export default function GithubRepoInfo({ url }: GithubRepoInfoProps) {
         } catch {
             // Invalid URL, ignore
         }
-    }, [url]);
+    }, [url, onLoaded]);
 
     if (!repo || error) {
         return null;
     }
 
     return (
-        <div className="mb-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300">
-            <div className="flex items-center justify-between gap-2 mb-1">
-                <a
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline truncate"
-                >
-                    {repo.full_name}
-                </a>
-                {repo.language && (
-                    <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[0.65rem]">
-                        {repo.language}
-                    </span>
-                )}
-            </div>
+        <div className="mb-3 text-xs text-zinc-600 dark:text-zinc-300">
             {repo.description && (
-                <p className="mb-1 line-clamp-2 text-[0.7rem]">
+                <p className="mb-2 text-[0.75rem] leading-snug line-clamp-3">
                     {repo.description}
                 </p>
             )}
-            <div className="flex flex-wrap gap-2 text-[0.65rem]">
-                <span>Stars: {repo.stargazers_count}</span>
-                <span>Forks: {repo.forks_count}</span>
-                <span>Issues: {repo.open_issues_count}</span>
+            <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.7rem]">
+                {repo.language && (
+                    <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-400">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500/80 dark:bg-emerald-400/80" />
+                        <span>{repo.language}</span>
+                    </span>
+                )}
+                <div className="ml-auto flex items-center gap-4 text-zinc-500 dark:text-zinc-400">
+                    <span className="inline-flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                        <span className="tabular-nums">
+                            {repo.stargazers_count.toLocaleString()}
+                        </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                        <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span className="tabular-nums">
+                            {repo.forks_count.toLocaleString()}
+                        </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                        <CircleDot className="w-3.5 h-3.5" aria-hidden="true" />
+                        <span className="tabular-nums">
+                            {repo.open_issues_count.toLocaleString()}
+                        </span>
+                    </span>
+                </div>
             </div>
         </div>
     );

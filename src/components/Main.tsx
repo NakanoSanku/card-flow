@@ -3,7 +3,7 @@ import Search from './Search';
 import FilterBar from './FilterBar';
 import Card from './Card';
 import ThemeToggle from './ThemeToggle';
-import { Copy, CheckCircle2 } from 'lucide-react';
+import { Copy, CheckCircle2, ChevronDown } from 'lucide-react';
 import hljs from 'highlight.js';
 
 interface MainProps {
@@ -16,10 +16,9 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [columnCount, setColumnCount] = useState(1);
   const [cardHeights, setCardHeights] = useState<Record<string, number>>({});
-  const [selectedAppSlugs, setSelectedAppSlugs] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [selectedAppSlugs, setSelectedAppSlugs] = useState<string[]>(() => []);
   const [copiedInstallCommand, setCopiedInstallCommand] = useState(false);
+  const [showInstallCommand, setShowInstallCommand] = useState(false);
 
   const shuffleArray = (array: any[]) => {
     const newArray = [...array];
@@ -70,32 +69,34 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
 
   const handleToggleAppSelect = useCallback((slug: string, selected: boolean) => {
     setSelectedAppSlugs((prev) => {
-      const next = new Set(prev);
       if (selected) {
-        next.add(slug);
-      } else {
-        next.delete(slug);
+        const filtered = prev.filter((s) => s !== slug);
+        return [slug, ...filtered];
       }
-      return next;
+      return prev.filter((s) => s !== slug);
     });
   }, []);
 
   const clearSelection = useCallback(() => {
-    setSelectedAppSlugs(new Set());
+    setSelectedAppSlugs([]);
   }, []);
 
   const selectedApps = useMemo(() => {
     const apps: { slug: string; title: string; wingetId: string }[] = [];
 
-    for (const post of initialPosts) {
-      if (post.data.type !== 'app') continue;
-      if (!selectedAppSlugs.has(post.slug as string)) continue;
+    if (selectedAppSlugs.length === 0) return apps;
+
+    for (const slug of selectedAppSlugs) {
+      const post = initialPosts.find(
+        (p) => p.slug === slug && p.data.type === 'app',
+      );
+      if (!post) continue;
 
       const wingetId = (post.data as any).wingetId as string | undefined;
       if (!wingetId) continue;
 
       apps.push({
-        slug: post.slug as string,
+        slug,
         title: post.data.title,
         wingetId,
       });
@@ -162,6 +163,11 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
     return cols;
   }, [displayedPosts, columnCount, cardHeights]);
 
+  const previewApps = selectedApps.slice(0, 2);
+  const extraAppCount = selectedApps.length - previewApps.length;
+  const remainingApps =
+    extraAppCount > 0 ? selectedApps.slice(previewApps.length) : [];
+
   return (
     <div className="container mx-auto px-2 py-12">
       <header className="text-center mb-12">
@@ -214,7 +220,7 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
                   content={post.body}
                   selectable={selectable}
                   wingetUnsupported={isApp && !wingetId}
-                  selected={selectedAppSlugs.has(post.slug as string)}
+                  selected={selectedAppSlugs.includes(post.slug as string)}
                   onSelectedChange={(selected) =>
                     handleToggleAppSelect(post.slug as string, selected)
                   }
@@ -227,27 +233,63 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
 
       {selectedApps.length > 0 && installCommand && (
         <div className="fixed inset-x-0 bottom-4 flex justify-center pointer-events-none z-40">
-          <section className="pointer-events-auto w-full max-w-3xl mx-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col p-4">
-            <div className="flex items-start justify-between mb-3 gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400 mb-1 font-semibold">
-                  Winget install helper
-                </p>
-                <h2 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                  {selectedApps.length} app(s) selected, ready for one-shot Winget install
-                </h2>
-                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                  Run the command below in PowerShell to install all selected apps with winget.
-                </p>
+          <section className="pointer-events-auto px-4 max-w-full">
+            <div className="rounded-full bg-white/70 dark:bg-zinc-900/70 border border-white/60 dark:border-zinc-700/70 backdrop-blur-xl shadow-lg shadow-zinc-900/20 px-3 py-2 md:px-4 md:py-2.5 flex flex-col md:flex-row md:items-center gap-2">
+              <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-1.5 flex-nowrap">
+                  {previewApps.map((app) => (
+                    <div
+                      key={app.slug}
+                      className="inline-flex items-center gap-1.5 max-w-[120px] px-2.5 py-1 rounded-full bg-white/50 dark:bg-zinc-900/60 border border-white/60 dark:border-zinc-700/70 text-[11px] text-zinc-800 dark:text-zinc-100 flex-shrink-0"
+                    >
+                      <span className="truncate font-normal">
+                        {app.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAppSelect(app.slug, false)}
+                        className="text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+                        aria-label={`Remove ${app.title}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {extraAppCount > 0 && (
+                    <div className="relative inline-flex items-center group flex-shrink-0">
+                      <div className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-zinc-200/80 dark:bg-zinc-800/80 text-[11px] text-zinc-600 dark:text-zinc-300">
+                        +{extraAppCount}
+                      </div>
+                      <div className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 opacity-0 scale-95 transform-gpu transition-all duration-150 group-hover:opacity-100 group-hover:scale-100">
+                        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/95 text-[11px] text-zinc-50 shadow-lg min-w-[160px] max-w-[240px] px-3 py-2">
+                          <p className="mb-1 text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+                            More apps
+                          </p>
+                          <ul className="space-y-0.5 max-h-32 overflow-y-auto">
+                            {remainingApps.map((app) => (
+                              <li
+                                key={app.slug}
+                                className="truncate text-[11px] text-zinc-100"
+                                title={app.title}
+                              >
+                                • {app.title}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={handleCopyInstallCommand}
-                  className={`inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-full text-white transition-colors shadow-sm ${
+                  className={`inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full text-white shadow-sm transition-all duration-150 active:scale-[0.97] bg-gradient-to-r ${
                     copiedInstallCommand
-                      ? 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-600'
-                      : 'bg-blue-600 hover:bg-blue-500 active:bg-blue-600'
+                      ? 'from-emerald-500 via-emerald-500 to-emerald-400 hover:from-emerald-500 hover:via-emerald-500 hover:to-emerald-400'
+                      : 'from-sky-500 via-indigo-500 to-emerald-500 hover:from-sky-400 hover:via-indigo-400 hover:to-emerald-400'
                   }`}
                 >
                   {copiedInstallCommand ? (
@@ -255,53 +297,48 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
                   ) : (
                     <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                   )}
-                  <span>
-                    {copiedInstallCommand ? 'Copied Command' : 'Copy Command'}
+                  <span className="whitespace-nowrap">
+                    {copiedInstallCommand ? 'Copied' : 'Copy command'}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={clearSelection}
-                  className="text-xs px-3 py-1.5 rounded-full border border-zinc-300/80 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 bg-white/60 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="text-[11px] px-2.5 py-1 rounded-full border border-zinc-300/60 dark:border-zinc-700/70 text-zinc-600 dark:text-zinc-300 bg-white/40 dark:bg-zinc-900/40 hover:bg-white/70 dark:hover:bg-zinc-900/70 transition-colors"
                 >
                   Clear
                 </button>
               </div>
             </div>
-              <div className="mb-2 text-xs text-zinc-600 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-md px-2 py-2">
-              <p className="font-semibold mb-1">Selected apps</p>
-              <div className="flex flex-wrap gap-2">
-                {selectedApps.map((app) => (
-                  <div
-                    key={app.slug}
-                    className="inline-flex items-center gap-2 max-w-full px-3 py-1 rounded-full border border-zinc-200 bg-white dark:bg-zinc-900/60 dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-200 antialiased"
-                  >
-                    <span className="truncate max-w-[140px] font-normal">
-                      {app.title}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleAppSelect(app.slug, false)}
-                      className="text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+
+            <div className="mt-1 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowInstallCommand((prev) => !prev)}
+                className="inline-flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors px-2 py-1 rounded-full bg-zinc-100/40 dark:bg-zinc-900/40 backdrop-blur-sm"
+              >
+                <span>{showInstallCommand ? 'Hide command' : 'Show command'}</span>
+                <ChevronDown
+                  className={`w-3 h-3 transition-transform ${showInstallCommand ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
             </div>
-            <div className="text-xs md:text-sm font-mono rounded-lg overflow-hidden border border-zinc-800">
-              <div className="bg-zinc-900 text-zinc-50 overflow-x-auto">
-                <pre className="px-3 py-3 whitespace-pre-wrap break-words">
-                  <code
-                    className="hljs language-powershell"
-                    dangerouslySetInnerHTML={{
-                      __html: highlightedInstallCommand || installCommand,
-                    }}
-                  />
-                </pre>
+
+            {showInstallCommand && (
+              <div className="mt-2 rounded-2xl border border-zinc-800/80 bg-zinc-950/90 backdrop-blur-xl text-xs md:text-sm font-mono overflow-hidden">
+                <div className="text-zinc-50 overflow-x-auto">
+                  <pre className="px-3 py-3 whitespace-pre-wrap break-words">
+                    <code
+                      className="hljs language-powershell"
+                      dangerouslySetInnerHTML={{
+                        __html: highlightedInstallCommand || installCommand,
+                      }}
+                    />
+                  </pre>
+                </div>
               </div>
-            </div>
+            )}
           </section>
         </div>
       )}
