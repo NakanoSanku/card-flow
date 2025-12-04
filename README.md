@@ -1,170 +1,102 @@
-# 🌊 CardFlow (Masonry.md)
+# CardFlow
 
-[![Built with Astro](https://camo.githubusercontent.com/260486a23a2512c35c85ebd10e3026cdb1e372070726c51a3e7a018eb5737bbd/68747470733a2f2f696d672e736869656c64732e696f2f7374617469632f76313f6c6162656c3d415354524f266d6573736167653d352e313526636f6c6f723d303030266c6f676f3d617374726f)](https://astro.build) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Style](https://img.shields.io/badge/Style-TailwindCSS-38B2AC)](https://tailwindcss.com)
-
-**CardFlow** is a minimalist, Markdown-powered **masonry card site** for prompts, code snippets, app recommendations, and idea fragments. It is fully static—no backend, no database—your file system is the CMS.
+CardFlow is a content-driven masonry card wall for prompts, scripts, apps, links, and videos. Cards come from Markdown files and are rendered with interactive React components for search, filtering, and quick actions like copying snippets or batching `winget` installs.
 
 **English** | [中文文档](README_CN.md)
 
----
+## ✨ What’s inside
 
-## ✨ Highlights
+- **Responsive masonry layout** that measures card heights and balances columns on resize.
+- **Fuzzy search + filters** powered by Fuse.js and a horizontal type selector.
+- **Multiple card types**: prompts, scripts, videos, apps, GitHub repos, and general websites with per-type actions (copy content, open links, watch video, etc.).
+- **Winget install list**: select multiple app cards with `wingetId` to generate a one-click PowerShell install command.
+- **Code highlighting** using `marked` with a macOS-style code block shell.
+- **Dark mode toggle** with persisted preference.
 
-* **🧱 True masonry layout** powered by CSS columns for an organic, staggered grid that adapts to uneven card heights.
-* **📝 Markdown-first** content: every card is a `.md` file with syntax highlighting, links, and blockquotes out of the box.
-* **⚡ Blazing fast** static output via **Astro**, shipping zero JS at runtime by default.
-* **🔍 Millisecond search** with Fuse.js for fuzzy, client-side querying on static builds.
-* **🏷️ Tags & filtering** to quickly narrow down cards by multiple facets.
-* **🌗 Dark mode** that follows the system theme or manual toggle.
-* **🧩 Polymorphic cards** for different content types:
-  * **Prompt cards** with one-click copy.
-  * **Script cards** with highlighted, copyable code blocks.
-  * **App cards** with icons and external links.
-
----
-
-## 🛠️ Tech Stack
-
-* **Core framework**: [Astro 5.0+](https://astro.build/) (SSG)
-* **Styling**: [TailwindCSS](https://tailwindcss.com/)
-* **UI components**: React (for search and interactive pieces)
-* **Icons**: Lucide React
-* **Search**: Fuse.js
-
----
-
-## 🚀 Getting Started
-
-### 1) Clone the repo
-
-```bash
-git clone https://github.com/your-username/cardflow.git
-cd cardflow
-```
-
-### 2) Install dependencies
-
-```bash
-npm install
-# or
-pnpm install
-# or
-yarn
-```
-
-### 3) Start the dev server
-
-```bash
-npm run dev
-```
-Preview at `http://localhost:4321`.
-
----
-
-## 📂 Content Management
-
-All content lives in `src/content/posts/`; no database is required.
-
-### Directory layout
+## 🧱 Project structure
 
 ```text
 src/
+├── assets/                 # Static images
+├── components/             # React UI for cards, search, filters, theme, embeds
 ├── content/
-│   ├── posts/
-│   │   ├── midjourney-cyberpunk.md   # a prompt
-│   │   ├── python-automation.md      # a script
-│   │   └── obsidian-intro.md         # an app recommendation
-│   └── config.ts                     # content collection schema
+│   ├── posts/              # Markdown sources for all cards
+│   └── config.ts           # Astro content collection schema
+├── layouts/                # Site layout shell
+├── pages/index.astro       # Fetch + render cards
+└── styles/global.css       # Global styles
 ```
 
-### Add a new card
+Content lives in `src/content/posts/`; each `.md` file becomes a card.
 
-Create a new `.md` file in `src/content/posts/` with frontmatter describing the card.
+## 🛠️ Development
 
-#### Example: AI prompt
+```bash
+npm install
+npm run dev
+```
+
+Preview at <http://localhost:4321>. Additional scripts:
+
+- `npm run build` — build static output to `dist`.
+- `npm run preview` — serve the production build locally.
+
+## 📝 Authoring cards
+
+All cards share the same frontmatter schema defined in `src/content/config.ts`:
+
+- `title` (string)
+- `date` (optional date)
+- `tags` (string array, optional)
+- `type` (`prompt` | `script` | `video` | `app` | `github` | `website`)
+- `icon`, `color`, `image`, `video`, `url` (optional strings)
+- `wingetId` (optional, used for batch installs on `app` cards)
+
+Examples:
 
 ```markdown
 ---
 title: "Midjourney cyberpunk portrait"
-date: 2023-11-01
-tags: ["AI art", "Midjourney", "cyberpunk"]
-type: "prompt"   # required: drives the card layout
-icon: "🤖"       # optional: emoji or image path
-color: "purple"  # optional: accent color
+type: "prompt"
+color: "purple"
 ---
-
-(Optional notes)
-A high-quality cyberpunk prompt tuned for Midjourney V5.
-
-<!-- Content to copy, ideally inside a code block -->
-```text
-A futuristic cyberpunk girl, neon lights, rain, transparent raincoat, tokyo street background, 8k resolution, cinematic lighting
- --ar 16:9
+A high-quality cyberpunk prompt tuned for Midjourney.
 ```
-
-#### Example: App recommendation
 
 ```markdown
 ---
-title: "Obsidian"
-date: 2023-10-28
-tags: ["notes", "productivity", "knowledge base"]
+title: "Flow Launcher"
 type: "app"
-icon: "https://upload.wikimedia.org/wikipedia/commons/1/10/2023_Obsidian_logo.png"
-url: "https://obsidian.md"  # link to open when clicking the card
+url: "https://www.flowlauncher.com/"
+wingetId: "Flow-Launcher.Flow-Launcher"
 ---
-
-Obsidian is a local-first Markdown knowledge base with backlinks, graph view, and a rich plugin ecosystem.
+A fast Windows launcher with community plugins.
 ```
-
-#### Example: Code snippet
 
 ```markdown
 ---
-title: "Python batch rename"
-type: "script"
-tags: ["Python", "automation"]
+title: "Great repo"
+type: "github"
+url: "https://github.com/owner/project"
 ---
-
-Rename all `.jpg` files in the current directory sequentially.
-
-```python
-import os
-# ...code here...
+Summary of why this repo matters.
 ```
 
----
+- App cards with a `wingetId` can be selected to build a PowerShell command shown at the bottom of the page.
+- GitHub cards automatically fetch repo metadata for the title area.
+- Scripts and prompts expose a **Copy** action that strips HTML and copies the text.
 
-## ⚙️ Configuration
+## 🎨 Customization
 
-* Edit `src/consts.ts` for site title, description, and SEO metadata.
-* Customize the color palette in `tailwind.config.mjs`.
-* Adjust masonry columns in `src/pages/index.astro` via CSS classes (e.g., change `lg:columns-3` to `lg:columns-4`).
-
----
+- Update global metadata, fonts, or spacing in `src/styles/global.css` and component classes.
+- Tailwind utilities are available via `tailwindcss` and `tailwind-merge` for consistent styling.
+- Adjust supported types or schema defaults in `src/content/config.ts`.
+- Tweak the column breakpoints or empty states in `src/components/Main.tsx`.
 
 ## 📦 Deployment
 
-The site builds to static HTML and can be hosted on any static provider.
-
-### Vercel (recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/NakanoSanku/card-flow)
-
-1. Install the Vercel CLI or connect the repo on Vercel.
-2. Build command: `npm run build`
-3. Output directory: `dist`
-
-### GitHub Pages
-
-Add a GitHub Actions workflow in `.github/workflows/deploy.yml` to enable automatic deployment.
-
----
+This is a static Astro site. Build with `npm run build` and host the `dist` directory on any static provider (Vercel, Netlify, GitHub Pages, etc.).
 
 ## 🤝 Contributing
 
-Contributions are welcome! Open an issue or submit a PR. To share a new card, add your `.md` file under `src/content/posts/`.
-
-## 📄 License
-
-MIT License © 2024 Your Name
+Issues and PRs are welcome! Add new cards under `src/content/posts/` or extend components for new card behaviors.
