@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -9,27 +9,49 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ types, selectedType, onSelectType }: FilterBarProps) {
-    const VISIBLE_COUNT = 8;
+    const getVisibleCount = () => {
+        if (typeof window === 'undefined') return 6;
+        if (window.innerWidth < 480) return 4;
+        if (window.innerWidth < 768) return 6;
+        return 8;
+    };
+
+    const [visibleCount, setVisibleCount] = useState(getVisibleCount);
     const [startIndex, setStartIndex] = useState(0);
 
-    const maxStartIndex = Math.max(types.length - VISIBLE_COUNT, 0);
+    useEffect(() => {
+        const handleResize = () => setVisibleCount(getVisibleCount());
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const maxStartIndex = Math.max(types.length - visibleCount, 0);
     const clampedStartIndex = Math.min(startIndex, maxStartIndex);
-    const visibleTypes = types.slice(clampedStartIndex, clampedStartIndex + VISIBLE_COUNT);
+    const visibleTypes = useMemo(
+        () => types.slice(clampedStartIndex, clampedStartIndex + visibleCount),
+        [types, clampedStartIndex, visibleCount]
+    );
+
+    useEffect(() => {
+        setStartIndex(prev => Math.min(prev, maxStartIndex));
+    }, [maxStartIndex]);
 
     const canScrollLeft = clampedStartIndex > 0;
-    const canScrollRight = clampedStartIndex + VISIBLE_COUNT < types.length;
+    const canScrollRight = clampedStartIndex + visibleCount < types.length;
 
     const handlePrev = () => {
-        setStartIndex(prev => Math.max(prev - VISIBLE_COUNT, 0));
+        setStartIndex(prev => Math.max(prev - visibleCount, 0));
     };
 
     const handleNext = () => {
-        setStartIndex(prev => Math.min(prev + VISIBLE_COUNT, maxStartIndex));
+        setStartIndex(prev => Math.min(prev + visibleCount, maxStartIndex));
     };
 
     return (
-        <div className="w-full mb-8 flex items-center justify-center gap-3">
-            <div className="flex items-center gap-2">
+        <div className="w-full mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+            <div className="flex items-center gap-2 self-start sm:self-auto">
                 <button
                     onClick={() => onSelectType(null)}
                     className={clsx(
@@ -43,7 +65,7 @@ export default function FilterBar({ types, selectedType, onSelectType }: FilterB
                 </button>
             </div>
 
-            <div className="flex items-center gap-2 max-w-full">
+            <div className="flex items-center gap-2 max-w-full w-full sm:w-auto sm:justify-center">
                 <button
                     type="button"
                     onClick={handlePrev}
@@ -59,7 +81,7 @@ export default function FilterBar({ types, selectedType, onSelectType }: FilterB
                     <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <div className="flex items-center gap-2 overflow-hidden">
+                <div className="flex flex-wrap items-center gap-2 overflow-hidden max-w-full">
                     {visibleTypes.map(type => (
                         <button
                             key={type}
