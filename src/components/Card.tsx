@@ -9,11 +9,13 @@ import {
   ShoppingCart,
   CheckCircle2,
   Copy,
+  Star,
+  GitFork,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import VideoEmbed from "./VideoEmbed";
-import GithubRepoInfo from "./GithubRepoInfo";
+import GithubRepoInfo, { type GithubRepoData } from "./GithubRepoInfo";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,6 +68,7 @@ export default function Card({
 }: CardProps) {
   const [copied, setCopied] = useState(false);
   const [githubTitle, setGithubTitle] = useState<string | null>(null);
+  const [githubRepo, setGithubRepo] = useState<GithubRepoData | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
   const getAutoIconUrl = (link?: string | null): string | null => {
@@ -222,7 +225,13 @@ export default function Card({
 
       <div className="p-4 pt-2 flex-1">
         {type === "github" && url && (
-          <GithubRepoInfo url={url} onLoaded={(data) => setGithubTitle(data.full_name)} />
+          <GithubRepoInfo
+            url={url}
+            onLoaded={(data) => {
+              setGithubTitle(data.full_name);
+              setGithubRepo(data);
+            }}
+          />
         )}
 
         <div
@@ -283,26 +292,49 @@ export default function Card({
           </a>
         </div>
       ) : showExternalLink ? (
-        <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
-          >
-            {type === "github" ? (
-              <>
-                <Github className="w-4 h-4" aria-hidden="true" />
-                <span>View on GitHub</span>
-              </>
-            ) : (
-              <>
-                <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                <span>Visit Website</span>
-              </>
-            )}
-          </a>
-        </div>
+        type === "github" ? (
+          <div className="flex items-center justify-between w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-4 text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
+              {githubRepo?.language && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500/80 dark:bg-emerald-400/80" />
+                  <span>{githubRepo.language}</span>
+                </span>
+              )}
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-1">
+                  <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                  <span className="tabular-nums">{githubRepo?.stargazers_count.toLocaleString()}</span>
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span className="tabular-nums">{githubRepo?.forks_count.toLocaleString()}</span>
+                </span>
+              </div>
+            </div>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <Github className="w-4 h-4" aria-hidden="true" />
+              <span>View on GitHub</span>
+            </a>
+          </div>
+        ) : (
+          <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              <span>Visit Website</span>
+            </a>
+          </div>
+        )
       ) : (
         <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
           <button
