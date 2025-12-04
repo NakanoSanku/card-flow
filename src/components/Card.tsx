@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText } from 'lucide-react';
+import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText, Github } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import VideoEmbed from './VideoEmbed';
+import GithubRepoInfo from './GithubRepoInfo';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -14,7 +15,7 @@ interface CardProps {
     title: string;
     date?: Date;
     tags: string[];
-    type: 'prompt' | 'script' | 'app';
+    type: 'prompt' | 'script' | 'app' | 'github';
     icon?: string;
     color?: string;
     image?: string;
@@ -85,6 +86,7 @@ export default function Card({
             case 'prompt': return <ImageIcon className="w-5 h-5" />;
             case 'script': return <Terminal className="w-5 h-5" />;
             case 'app': return <ExternalLink className="w-5 h-5" />;
+            case 'github': return <Github className="w-5 h-5" />;
             default: return <FileText className="w-5 h-5" />;
         }
     };
@@ -121,6 +123,9 @@ export default function Card({
             )}
 
             <div className="p-4 pt-2 flex-1">
+                {type === 'github' && url && (
+                    <GithubRepoInfo url={url} />
+                )}
                 <div
                     className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"
                     dangerouslySetInnerHTML={{ __html: content }}
@@ -135,14 +140,14 @@ export default function Card({
                 </div>
             </div>
 
-            {type === 'app' && url ? (
+            {(type === 'app' || type === 'github') && url ? (
                 <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
-                    Visit Website &rarr;
+                    {type === 'github' ? 'View on GitHub →' : 'Visit Website →'}
                 </a>
             ) : (
                 <button
