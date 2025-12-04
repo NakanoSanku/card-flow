@@ -153,7 +153,7 @@ import os
 
 ### Vercel (推荐)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcardflow)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/NakanoSanku/card-flow)
 
 1.  安装 Vercel CLI 或连接 GitHub 仓库。
 2.  构建命令：`npm run build`
