@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import Search from './Search';
 import FilterBar from './FilterBar';
 import Card from './Card';
@@ -12,6 +12,8 @@ interface MainProps {
 export default function Main({ initialPosts, allTags }: MainProps) {
     const [filteredPosts, setFilteredPosts] = useState(initialPosts);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [columnCount, setColumnCount] = useState(1);
+    const [itemHeights, setItemHeights] = useState<Record<string, number>>({});
 
     // Fisher-Yates shuffle algorithm
     const shuffleArray = (array: any[]) => {
@@ -27,6 +29,29 @@ export default function Main({ initialPosts, allTags }: MainProps) {
         setFilteredPosts(shuffleArray(initialPosts));
     }, [initialPosts]);
 
+    // Match Tailwind breakpoints roughly, for column count
+    React.useEffect(() => {
+        const updateColumns = () => {
+            if (typeof window === 'undefined') return;
+            const width = window.innerWidth;
+            let count = 1;
+            if (width >= 1280) {
+                count = 4;
+            } else if (width >= 1024) {
+                count = 3;
+            } else if (width >= 768) {
+                count = 2;
+            } else if (width >= 640) {
+                count = 2;
+            }
+            setColumnCount(count);
+        };
+
+        updateColumns();
+        window.addEventListener('resize', updateColumns);
+        return () => window.removeEventListener('resize', updateColumns);
+    }, []);
+
     const handleSearch = (results: any[]) => {
         setFilteredPosts(results);
     };
@@ -38,6 +63,49 @@ export default function Main({ initialPosts, allTags }: MainProps) {
         }
         return posts;
     }, [filteredPosts, selectedTag]);
+
+    const handleItemHeightChange = useCallback((slug: string, height: number) => {
+        setItemHeights(prev => {
+            const current = prev[slug];
+            if (current === height) return prev;
+            return { ...prev, [slug]: height };
+        });
+    }, []);
+
+    // Distribute posts into columns to balance total "height"
+    const columns = useMemo(() => {
+        const count = Math.max(columnCount, 1);
+        const cols: any[][] = Array.from({ length: count }, () => []);
+        const heights = new Array(count).fill(0);
+
+        for (const post of displayedPosts) {
+            const slug = post.slug as string;
+            const measuredHeight = itemHeights[slug];
+            const estimatedHeight = (() => {
+                let h = 1;
+                const body = post.body ?? '';
+                const bodyLength = typeof body === 'string' ? body.length : 0;
+                h += bodyLength / 600;
+                if (post.data?.image) h += 3;
+                if (post.data?.video) h += 4;
+                return h;
+            })();
+            const weight = measuredHeight || estimatedHeight;
+
+            let targetIndex = 0;
+            let minHeight = heights[0];
+            for (let i = 1; i < count; i++) {
+                if (heights[i] < minHeight) {
+                    minHeight = heights[i];
+                    targetIndex = i;
+                }
+            }
+            cols[targetIndex].push(post);
+            heights[targetIndex] += weight;
+        }
+
+        return cols;
+    }, [displayedPosts, columnCount, itemHeights]);
 
     return (
         <div className="container mx-auto px-2 py-12">
@@ -62,21 +130,27 @@ export default function Main({ initialPosts, allTags }: MainProps) {
                 onSelectTag={setSelectedTag}
             />
 
-            <div className="columns-1 sm:columns-2 md:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-                {displayedPosts.map((post) => (
-                    <Card
-                        key={post.slug}
-                        title={post.data.title}
-                        date={post.data.date}
-                        tags={post.data.tags}
-                        type={post.data.type}
-                        icon={post.data.icon}
-                        color={post.data.color}
-                        image={post.data.image}
-                        video={post.data.video}
-                        url={post.data.url}
-                        content={post.body}
-                    />
+            <div className="flex gap-4">
+                {columns.map((columnPosts, columnIndex) => (
+                    <div key={columnIndex} className="flex-1 flex flex-col gap-4">
+                        {columnPosts.map((post) => (
+                            <Card
+                                key={post.slug}
+                                slug={post.slug}
+                                onHeightChange={handleItemHeightChange}
+                                title={post.data.title}
+                                date={post.data.date}
+                                tags={post.data.tags}
+                                type={post.data.type}
+                                icon={post.data.icon}
+                                color={post.data.color}
+                                image={post.data.image}
+                                video={post.data.video}
+                                url={post.data.url}
+                                content={post.body}
+                            />
+                        ))}
+                    </div>
                 ))}
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -9,6 +9,8 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface CardProps {
+    slug?: string;
+    onHeightChange?: (slug: string, height: number) => void;
     title: string;
     date?: Date;
     tags: string[];
@@ -21,8 +23,45 @@ interface CardProps {
     content: string; // HTML content from Markdown
 }
 
-export default function Card({ title, date, tags, type, icon, color, image, video, url, content }: CardProps) {
+export default function Card({
+    slug,
+    onHeightChange,
+    title,
+    date,
+    tags,
+    type,
+    icon,
+    color,
+    image,
+    video,
+    url,
+    content
+}: CardProps) {
     const [copied, setCopied] = useState(false);
+    const cardRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!slug || !onHeightChange || typeof window === 'undefined') return;
+        const element = cardRef.current;
+        if (!element || typeof ResizeObserver === 'undefined') return;
+
+        const notify = () => {
+            const rect = element.getBoundingClientRect();
+            if (rect.height) {
+                onHeightChange(slug, rect.height);
+            }
+        };
+
+        notify();
+
+        const observer = new ResizeObserver(() => {
+            notify();
+        });
+
+        observer.observe(element);
+
+        return () => observer.disconnect();
+    }, [slug, onHeightChange]);
 
     const handleCopy = () => {
         // Extract text from code block or just raw content
@@ -51,7 +90,10 @@ export default function Card({ title, date, tags, type, icon, color, image, vide
     };
 
     return (
-        <div className="break-inside-avoid mb-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+        <div
+            ref={cardRef}
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
+        >
             <div className="p-4 pb-2">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
