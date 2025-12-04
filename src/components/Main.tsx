@@ -3,7 +3,7 @@ import Search from './Search';
 import FilterBar from './FilterBar';
 import Card from './Card';
 import ThemeToggle from './ThemeToggle';
-import { Copy, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Copy, CheckCircle2, ChevronDown, ArrowUp, Github } from 'lucide-react';
 import hljs from 'highlight.js';
 
 interface MainProps {
@@ -169,35 +169,33 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
     extraAppCount > 0 ? selectedApps.slice(previewApps.length) : [];
 
   return (
-    <div className="container mx-auto px-2 py-12">
-      <header className="text-center mb-12">
-        <div className="flex justify-end mb-4 gap-2">
-          <ThemeToggle />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
-          CardFlow
-        </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-          A minimalist masonry card site for your prompts, scripts, and apps.
-          Markdown driven, no database required.
-        </p>
-      </header>
+    <>
+      <div className="container mx-auto px-2 py-12">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
+            Insider Flow
+          </h1>
+          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+            A minimalist masonry card site for your prompts, scripts, and apps.
+            Markdown driven, no database required.
+          </p>
+        </header>
 
-      <Search posts={initialPosts} onSearch={handleSearch} />
+        <Search posts={initialPosts} onSearch={handleSearch} />
 
-      <FilterBar
-        types={allTypes}
-        selectedType={selectedType}
-        onSelectType={setSelectedType}
-      />
+        <FilterBar
+          types={allTypes}
+          selectedType={selectedType}
+          onSelectType={setSelectedType}
+        />
 
-      <div className="flex gap-4">
-        {columns.map((columnPosts, columnIndex) => (
-          <div
-            key={columnIndex}
-            className="flex-1 flex flex-col gap-4 min-w-0"
-          >
-            {columnPosts.map((post) => {
+        <div className="flex gap-4">
+          {columns.map((columnPosts, columnIndex) => (
+            <div
+              key={columnIndex}
+              className="flex-1 flex flex-col gap-4 min-w-0"
+            >
+              {columnPosts.map((post) => {
               const wingetId = (post.data as any).wingetId as
                 | string
                 | undefined;
@@ -229,9 +227,9 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
             })}
           </div>
         ))}
-      </div>
+        </div>
 
-      {selectedApps.length > 0 && installCommand && (
+        {selectedApps.length > 0 && installCommand && (
         <div className="fixed inset-x-0 bottom-4 flex justify-center pointer-events-none z-40 px-3 sm:px-4">
           <section className="pointer-events-auto w-full max-w-3xl">
             <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/60 dark:border-zinc-700/70 backdrop-blur-xl shadow-lg shadow-zinc-900/20 px-3 py-2 md:px-4 md:py-2.5 flex flex-col md:flex-row md:items-center gap-2">
@@ -341,13 +339,44 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
             )}
           </section>
         </div>
-      )}
+        )}
 
-      {displayedPosts.length === 0 && (
-        <div className="text-center text-zinc-500 py-12">
-          No cards found matching your criteria.
-        </div>
-      )}
-    </div>
+        {displayedPosts.length === 0 && (
+          <div className="text-center text-zinc-500 py-12">
+            No cards found matching your criteria.
+          </div>
+        )}
+
+        <footer className="mt-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Built with Astro
+        </footer>
+      </div>
+
+      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50">
+        <ThemeToggle />
+        <button
+          type="button"
+          onClick={() =>
+            window.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            })
+          }
+          className="rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-900/40 p-3 text-zinc-700 dark:text-zinc-200 hover:-translate-y-0.5 transition-transform"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="w-5 h-5" aria-hidden="true" />
+        </button>
+        <a
+          href="https://github.com/NakanoSanku/card-flow"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-900/40 p-3 text-zinc-700 dark:text-zinc-200 hover:-translate-y-0.5 transition-transform"
+          aria-label="View repository on GitHub"
+        >
+          <Github className="w-5 h-5" aria-hidden="true" />
+        </a>
+      </div>
+    </>
   );
 }

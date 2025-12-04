@@ -3,7 +3,11 @@ import { Sun, Moon, Monitor } from 'lucide-react';
 
 type Theme = 'light' | 'dark' | 'system';
 
-export default function ThemeToggle() {
+interface ThemeToggleProps {
+    className?: string;
+}
+
+export default function ThemeToggle({ className = '' }: ThemeToggleProps) {
     const [theme, setTheme] = useState<Theme>('system');
 
     useEffect(() => {
@@ -36,38 +40,31 @@ export default function ThemeToggle() {
         applyTheme(newTheme);
     };
 
+    const cycleTheme = () => {
+        const order: Theme[] = ['light', 'dark', 'system'];
+        const currentIndex = order.indexOf(theme);
+        const nextTheme = order[(currentIndex + 1) % order.length];
+        handleThemeChange(nextTheme);
+    };
+
+    const icon =
+        theme === 'dark' ? (
+            <Moon className="w-5 h-5" />
+        ) : theme === 'light' ? (
+            <Sun className="w-5 h-5" />
+        ) : (
+            <Monitor className="w-5 h-5" />
+        );
+
     return (
-        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
-            <button
-                onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-md transition-colors ${theme === 'light'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="Light mode"
-            >
-                <Sun className="w-4 h-4" />
-            </button>
-            <button
-                onClick={() => handleThemeChange('system')}
-                className={`p-2 rounded-md transition-colors ${theme === 'system'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="System preference"
-            >
-                <Monitor className="w-4 h-4" />
-            </button>
-            <button
-                onClick={() => handleThemeChange('dark')}
-                className={`p-2 rounded-md transition-colors ${theme === 'dark'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="Dark mode"
-            >
-                <Moon className="w-4 h-4" />
-            </button>
-        </div>
+        <button
+            type="button"
+            onClick={cycleTheme}
+            className={`rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-900/40 p-3 text-zinc-700 dark:text-zinc-200 hover:-translate-y-0.5 transition-transform ${className}`}
+            aria-label={`Switch theme (current: ${theme})`}
+            title="Switch theme"
+        >
+            {icon}
+        </button>
     );
 }
