@@ -1,6 +1,6 @@
 # 🌊 CardFlow (Masonry.md)
 
-[![Built with Astro](https://astro.new/origin.svg)](https://astro.build) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Style](https://img.shields.io/badge/Style-TailwindCSS-38B2AC)](https://tailwindcss.com)
+[![Built with Astro](https://camo.githubusercontent.com/260486a23a2512c35c85ebd10e3026cdb1e372070726c51a3e7a018eb5737bbd/68747470733a2f2f696d672e736869656c64732e696f2f7374617469632f76313f6c6162656c3d415354524f266d6573736167653d352e313526636f6c6f723d303030266c6f676f3d617374726f)](https://astro.build) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Style](https://img.shields.io/badge/Style-TailwindCSS-38B2AC)](https://tailwindcss.com)
 
 **CardFlow** 是一个极简主义的、基于 Markdown 的**瀑布流静态卡片站**。
 
@@ -133,7 +133,6 @@ tags: ["Python", "自动化"]
 import os
 # ...代码内容...
 ```
-```
 
 ---
 
@@ -153,6 +152,8 @@ import os
 本项目构建后为纯静态文件，可以部署在任何静态托管服务上。
 
 ### Vercel (推荐)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcardflow)
 
 1.  安装 Vercel CLI 或连接 GitHub 仓库。
 2.  构建命令：`npm run build`
