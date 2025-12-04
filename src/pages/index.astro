@@ -1,11 +1,63 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import Main from '../components/Main';
+import { getCollection } from 'astro:content';
+import { Marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const marked = new Marked(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+  })
+);
+
+const renderer = {
+  code({ text, lang }) {
+    const language = lang || 'plaintext';
+    return `
+      <div class="mac-window my-6 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-[#282c34] shadow-md">
+        <div class="mac-header flex items-center justify-between px-4 py-2 bg-zinc-100 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+          <div class="mac-dots flex gap-1.5">
+            <div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
+            <div class="w-3 h-3 rounded-full bg-[#27c93f]"></div>
+          </div>
+          <div class="mac-title text-xs font-medium text-zinc-500 dark:text-zinc-400 select-none">
+            ${language}
+          </div>
+          <div class="w-10"></div> <!-- Spacer for centering -->
+        </div>
+        <div class="p-4 overflow-x-auto">
+          <pre><code class="hljs language-${language}">${text}</code></pre>
+        </div>
+      </div>
+    `;
+  }
+};
+
+marked.use({ renderer });
+
+// Fetch all posts
+const posts = await getCollection('posts');
+
+// Get all unique tags
+const allTags = [...new Set(posts.flatMap(post => post.data.tags))].sort();
+
+// Pre-render content to HTML
+const renderedPosts = await Promise.all(posts.map(async (post) => {
+  const html = await marked.parse(post.body);
+  return {
+    ...post,
+    body: html
+  };
+}));
 ---
 
 <Layout>
-	<Welcome />
+	<Main client:load initialPosts={renderedPosts} allTags={allTags} />
 </Layout>

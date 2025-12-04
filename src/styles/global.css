@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+/* Override highlight.js background to blend with Mac-style window */
+.hljs {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Ensure pre/code don't add extra spacing */
+pre {
+    margin: 0;
+}
