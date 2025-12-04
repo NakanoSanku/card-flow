@@ -3,7 +3,7 @@ import Search from './Search';
 import FilterBar from './FilterBar';
 import Card from './Card';
 import ThemeToggle from './ThemeToggle';
-import { Copy, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Copy, CheckCircle2, ChevronDown, ArrowUp, Github } from 'lucide-react';
 import hljs from 'highlight.js';
 
 interface MainProps {
@@ -19,6 +19,7 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
   const [selectedAppSlugs, setSelectedAppSlugs] = useState<string[]>(() => []);
   const [copiedInstallCommand, setCopiedInstallCommand] = useState(false);
   const [showInstallCommand, setShowInstallCommand] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const shuffleArray = (array: any[]) => {
     const newArray = [...array];
@@ -53,6 +54,17 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
     updateColumns();
     window.addEventListener('resize', updateColumns);
     return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (typeof window === 'undefined') return;
+      setShowScrollButton(window.scrollY > 200);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleSearch = (results: any[]) => {
@@ -130,6 +142,11 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
     setTimeout(() => setCopiedInstallCommand(false), 2000);
   }, [installCommand]);
 
+  const scrollToTop = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const handleCardHeightChange = useCallback((slug: string, height: number) => {
     if (!slug) return;
     setCardHeights((prev) => {
@@ -171,11 +188,8 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
   return (
     <div className="container mx-auto px-2 py-12">
       <header className="text-center mb-12">
-        <div className="flex justify-end mb-4 gap-2">
-          <ThemeToggle />
-        </div>
         <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
-          CardFlow
+          Insider Flow
         </h1>
         <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
           A minimalist masonry card site for your prompts, scripts, and apps.
@@ -348,6 +362,33 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
           No cards found matching your criteria.
         </div>
       )}
+
+      <div className="fixed right-4 bottom-4 flex flex-col items-end gap-3 z-50">
+        <ThemeToggle />
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className={
+            showScrollButton
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-3 pointer-events-none'
+          }
+        >
+          <span className="w-12 h-12 inline-flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-zinc-200/70 dark:border-zinc-700/70 shadow-lg text-zinc-700 dark:text-zinc-100 hover:-translate-y-0.5 transition-transform duration-200">
+            <ArrowUp className="w-5 h-5" aria-hidden="true" />
+            <span className="sr-only">Back to top</span>
+          </span>
+        </button>
+        <a
+          href="https://github.com/NakanoSanku/card-flow"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-12 h-12 inline-flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-zinc-200/70 dark:border-zinc-700/70 shadow-lg text-zinc-700 dark:text-zinc-100 hover:-translate-y-0.5 transition-transform duration-200"
+        >
+          <Github className="w-5 h-5" aria-hidden="true" />
+          <span className="sr-only">View GitHub repository</span>
+        </a>
+      </div>
     </div>
   );
 }

@@ -36,38 +36,40 @@ export default function ThemeToggle() {
         applyTheme(newTheme);
     };
 
+    useEffect(() => {
+        if (theme !== 'system') return;
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = () => applyTheme('system');
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [theme]);
+
+    const cycleTheme = () => {
+        const order: Theme[] = ['light', 'dark', 'system'];
+        const currentIndex = order.indexOf(theme);
+        const nextTheme = order[(currentIndex + 1) % order.length];
+        handleThemeChange(nextTheme);
+    };
+
+    const renderIcon = () => {
+        switch (theme) {
+            case 'light':
+                return <Sun className="w-5 h-5" aria-hidden="true" />;
+            case 'dark':
+                return <Moon className="w-5 h-5" aria-hidden="true" />;
+            default:
+                return <Monitor className="w-5 h-5" aria-hidden="true" />;
+        }
+    };
+
     return (
-        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
-            <button
-                onClick={() => handleThemeChange('light')}
-                className={`p-2 rounded-md transition-colors ${theme === 'light'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="Light mode"
-            >
-                <Sun className="w-4 h-4" />
-            </button>
-            <button
-                onClick={() => handleThemeChange('system')}
-                className={`p-2 rounded-md transition-colors ${theme === 'system'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="System preference"
-            >
-                <Monitor className="w-4 h-4" />
-            </button>
-            <button
-                onClick={() => handleThemeChange('dark')}
-                className={`p-2 rounded-md transition-colors ${theme === 'dark'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                title="Dark mode"
-            >
-                <Moon className="w-4 h-4" />
-            </button>
-        </div>
+        <button
+            onClick={cycleTheme}
+            className="w-12 h-12 inline-flex items-center justify-center rounded-full bg-white dark:bg-zinc-800 border border-zinc-200/70 dark:border-zinc-700/70 shadow-lg text-zinc-700 dark:text-zinc-100 hover:-translate-y-0.5 transition-transform duration-200"
+            title={`Switch theme (current: ${theme})`}
+        >
+            {renderIcon()}
+            <span className="sr-only">Toggle theme</span>
+        </button>
     );
 }
