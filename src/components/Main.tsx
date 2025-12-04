@@ -232,15 +232,15 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
       </div>
 
       {selectedApps.length > 0 && installCommand && (
-        <div className="fixed inset-x-0 bottom-4 flex justify-center pointer-events-none z-40">
-          <section className="pointer-events-auto px-4 max-w-full">
-            <div className="rounded-full bg-white/70 dark:bg-zinc-900/70 border border-white/60 dark:border-zinc-700/70 backdrop-blur-xl shadow-lg shadow-zinc-900/20 px-3 py-2 md:px-4 md:py-2.5 flex flex-col md:flex-row md:items-center gap-2">
+        <div className="fixed inset-x-0 bottom-4 flex justify-center pointer-events-none z-40 px-3 sm:px-4">
+          <section className="pointer-events-auto w-full max-w-3xl">
+            <div className="rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-white/60 dark:border-zinc-700/70 backdrop-blur-xl shadow-lg shadow-zinc-900/20 px-3 py-2 md:px-4 md:py-2.5 flex flex-col md:flex-row md:items-center gap-2">
               <div className="flex-1 min-w-0 flex items-center gap-2 md:gap-3">
-                <div className="flex items-center gap-1.5 flex-nowrap">
+                <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
                   {previewApps.map((app) => (
                     <div
                       key={app.slug}
-                      className="inline-flex items-center gap-1.5 max-w-[120px] px-2.5 py-1 rounded-full bg-white/50 dark:bg-zinc-900/60 border border-white/60 dark:border-zinc-700/70 text-[11px] text-zinc-800 dark:text-zinc-100 flex-shrink-0"
+                      className="inline-flex items-center gap-1.5 max-w-[140px] px-2.5 py-1 rounded-full bg-white/60 dark:bg-zinc-900/60 border border-white/60 dark:border-zinc-700/70 text-[11px] text-zinc-800 dark:text-zinc-100 flex-shrink-0"
                     >
                       <span className="truncate font-normal">
                         {app.title}
