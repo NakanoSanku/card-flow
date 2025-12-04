@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Copy,
   Star,
-  GitFork,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -70,6 +69,7 @@ export default function Card({
   const [githubTitle, setGithubTitle] = useState<string | null>(null);
   const [githubRepo, setGithubRepo] = useState<GithubRepoData | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const getAutoIconUrl = (link?: string | null): string | null => {
     if (!link) return null;
@@ -178,6 +178,87 @@ export default function Card({
   const displayTitle =
     type === "github" && githubTitle ? githubTitle : title;
 
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container || typeof window === "undefined") return;
+
+    const blocks = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-code-block]"),
+    );
+
+    const cleanupFns: Array<() => void> = [];
+
+    blocks.forEach((block) => {
+      const toggleBtn = block.querySelector<HTMLButtonElement>(
+        "[data-toggle-btn]",
+      );
+      const copyBtn = block.querySelector<HTMLButtonElement>("[data-copy-btn]");
+      const contentEl = block.querySelector<HTMLElement>("[data-code-content]");
+      const fadeEl = block.querySelector<HTMLElement>("[data-code-fade]");
+      const codeEl = block.querySelector<HTMLElement>("code");
+
+      if (!toggleBtn || !contentEl) return;
+
+      let expanded = block.getAttribute("data-expanded") === "true";
+      let copyTimeout: number | null = null;
+
+      const updateState = () => {
+        block.setAttribute("data-expanded", expanded ? "true" : "false");
+        toggleBtn.textContent = expanded ? "Collapse" : "Expand";
+
+        if (expanded) {
+          contentEl.classList.remove("max-h-64");
+          contentEl.classList.add("max-h-none");
+          fadeEl?.classList.add("hidden");
+        } else {
+          contentEl.classList.remove("max-h-none");
+          contentEl.classList.add("max-h-64");
+          fadeEl?.classList.remove("hidden");
+        }
+      };
+
+      const handleToggle = () => {
+        expanded = !expanded;
+        updateState();
+      };
+
+      toggleBtn.addEventListener("click", handleToggle);
+
+      const cleanup = () => {
+        toggleBtn.removeEventListener("click", handleToggle);
+        if (copyTimeout) {
+          window.clearTimeout(copyTimeout);
+        }
+      };
+
+      if (copyBtn && codeEl) {
+        const handleCopyBlock = () => {
+          if (typeof navigator === "undefined" || !navigator.clipboard) return;
+          navigator.clipboard.writeText(codeEl.textContent ?? "");
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = "Copied!";
+          copyTimeout = window.setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 1500);
+        };
+
+        copyBtn.addEventListener("click", handleCopyBlock);
+        const prevCleanup = cleanup;
+        const newCleanup = () => {
+          prevCleanup();
+          copyBtn.removeEventListener("click", handleCopyBlock);
+        };
+        cleanupFns.push(newCleanup);
+      } else {
+        cleanupFns.push(cleanup);
+      }
+
+      updateState();
+    });
+
+    return () => cleanupFns.forEach((fn) => fn());
+  }, [content]);
+
   return (
     <div
       ref={cardRef}
@@ -236,6 +317,7 @@ export default function Card({
 
         <div
           className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"
+          ref={contentRef}
           dangerouslySetInnerHTML={{ __html: content }}
         />
 
@@ -305,10 +387,6 @@ export default function Card({
                 <span className="inline-flex items-center gap-1">
                   <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
                   <span className="tabular-nums">{githubRepo?.stargazers_count.toLocaleString()}</span>
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span className="tabular-nums">{githubRepo?.forks_count.toLocaleString()}</span>
                 </span>
               </div>
             </div>

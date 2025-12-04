@@ -170,7 +170,7 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
 
   return (
     <div className="container mx-auto px-2 py-12">
-      <header className="text-center mb-12">
+      <header className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
           Insider Flow
         </h1>
