@@ -6,6 +6,7 @@ type: "app"
 icon: "💻"
 color: "purple"
 url: "https://termius.com/"
+wingetId: "Termius.Termius"
 ---
 
 A modern SSH client that lets you organize, access, and manage your servers. It features secure data sync across all devices, snippet sharing, and a beautiful interface.

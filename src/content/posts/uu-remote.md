@@ -6,6 +6,7 @@ type: "app"
 icon: "🎮"
 color: "blue"
 url: "https://uu.163.com/"
+wingetId: "NetEase.UURemote"
 ---
 
 A high-performance remote desktop tool designed for gamers and professionals. It offers low latency, high frame rates, and excellent compatibility for remote gaming and work.

@@ -6,12 +6,13 @@ const posts = defineCollection({
 		title: z.string(),
 		date: z.date().optional(),
 		tags: z.array(z.string()).default([]),
-		type: z.enum(['prompt', 'script', 'app', 'github']).default('prompt'),
+		type: z.enum(['prompt', 'script', 'app', 'github', 'website']).default('prompt'),
 		icon: z.string().optional(),
 		color: z.string().optional(),
 		image: z.string().optional(),
 		video: z.string().optional(),
 		url: z.string().optional(),
+		wingetId: z.string().optional(),
 	}),
 });
 

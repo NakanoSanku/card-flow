@@ -38,7 +38,7 @@ export default function Search({ posts, onSearch }: SearchProps) {
             <input
                 type="text"
                 className="block w-full pl-10 pr-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl leading-5 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all shadow-sm"
-                placeholder="Search prompts, scripts, apps..."
+                placeholder="Search prompts, scripts, apps, websites..."
                 value={query}
                 onChange={handleSearch}
             />

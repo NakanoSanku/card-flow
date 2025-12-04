@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText, Github } from 'lucide-react';
+import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText, Github, Globe } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import VideoEmbed from './VideoEmbed';
@@ -15,13 +15,17 @@ interface CardProps {
     title: string;
     date?: Date;
     tags: string[];
-    type: 'prompt' | 'script' | 'app' | 'github';
+    type: 'prompt' | 'script' | 'app' | 'github' | 'website';
     icon?: string;
     color?: string;
     image?: string;
     video?: string;
     url?: string;
     content: string; // HTML content from Markdown
+    selectable?: boolean;
+    selected?: boolean;
+    onSelectedChange?: (selected: boolean) => void;
+    wingetUnsupported?: boolean;
 }
 
 export default function Card({
@@ -36,10 +40,26 @@ export default function Card({
     image,
     video,
     url,
-    content
+    content,
+    selectable,
+    selected,
+    onSelectedChange,
+    wingetUnsupported,
 }: CardProps) {
     const [copied, setCopied] = useState(false);
     const cardRef = useRef<HTMLDivElement | null>(null);
+
+    const getAutoIconUrl = (link?: string | null): string | null => {
+        if (!link) return null;
+        try {
+            const urlObj = new URL(link);
+            return `${urlObj.origin}/favicon.ico`;
+        } catch {
+            return null;
+        }
+    };
+
+    const autoIconUrl = !icon && type !== 'github' ? getAutoIconUrl(url) : null;
 
     useEffect(() => {
         if (!slug || !onHeightChange || typeof window === 'undefined') return;
@@ -65,11 +85,12 @@ export default function Card({
     }, [slug, onHeightChange]);
 
     const handleCopy = () => {
-        // Extract text from code block or just raw content
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = content;
         const codeBlock = tempDiv.querySelector('code');
-        const text = codeBlock ? codeBlock.innerText : tempDiv.innerText;
+        const text = codeBlock ? codeBlock.textContent ?? '' : tempDiv.textContent ?? '';
+
+        if (!text) return;
 
         navigator.clipboard.writeText(text);
         setCopied(true);
@@ -80,16 +101,28 @@ export default function Card({
         if (icon && (icon.startsWith('http') || icon.startsWith('/'))) {
             return <img src={icon} alt={title} className="w-6 h-6 rounded-sm object-cover" />;
         }
+        if (autoIconUrl) {
+            return <img src={autoIconUrl} alt={title} className="w-6 h-6 rounded-sm object-cover" />;
+        }
         if (icon) return <span className="text-xl">{icon}</span>;
 
         switch (type) {
-            case 'prompt': return <ImageIcon className="w-5 h-5" />;
-            case 'script': return <Terminal className="w-5 h-5" />;
-            case 'app': return <ExternalLink className="w-5 h-5" />;
-            case 'github': return <Github className="w-5 h-5" />;
-            default: return <FileText className="w-5 h-5" />;
+            case 'prompt':
+                return <ImageIcon className="w-5 h-5" />;
+            case 'script':
+                return <Terminal className="w-5 h-5" />;
+            case 'app':
+                return <ExternalLink className="w-5 h-5" />;
+            case 'website':
+                return <Globe className="w-5 h-5" />;
+            case 'github':
+                return <Github className="w-5 h-5" />;
+            default:
+                return <FileText className="w-5 h-5" />;
         }
     };
+
+    const showExternalLink = (type === 'app' || type === 'github' || type === 'website') && !!url;
 
     return (
         <div
@@ -97,15 +130,43 @@ export default function Card({
             className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
         >
             <div className="p-4 pb-2">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                        <div className={cn("p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800", color && `bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400`)}>
+                        <div
+                            className={cn(
+                                'p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800',
+                                color &&
+                                `bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400`,
+                            )}
+                        >
                             <Icon />
                         </div>
                         <div>
                             <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">{title}</h3>
-                            {date && <p className="text-xs text-zinc-500 mt-0.5">{new Date(date).toLocaleDateString()}</p>}
+                            {date && (
+                                <p className="text-xs text-zinc-500 mt-0.5">
+                                    {new Date(date).toLocaleDateString()}
+                                </p>
+                            )}
                         </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        {type === 'app' && wingetUnsupported && (
+                            <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                                不支持 winget 安装
+                            </span>
+                        )}
+                        {selectable && (
+                            <label className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 select-none">
+                                <input
+                                    type="checkbox"
+                                    className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
+                                    checked={!!selected}
+                                    onChange={(e) => onSelectedChange?.(e.target.checked)}
+                                />
+                                <span>安装</span>
+                            </label>
+                        )}
                     </div>
                 </div>
             </div>
@@ -123,24 +184,26 @@ export default function Card({
             )}
 
             <div className="p-4 pt-2 flex-1">
-                {type === 'github' && url && (
-                    <GithubRepoInfo url={url} />
-                )}
+                {type === 'github' && url && <GithubRepoInfo url={url} />}
+
                 <div
                     className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"
                     dangerouslySetInnerHTML={{ __html: content }}
                 />
 
                 <div className="flex flex-wrap gap-1.5 mt-auto">
-                    {tags.map(tag => (
-                        <span key={tag} className="px-2 py-0.5 text-xs rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                    {tags.map((tag) => (
+                        <span
+                            key={tag}
+                            className="px-2 py-0.5 text-xs rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                        >
                             #{tag}
                         </span>
                     ))}
                 </div>
             </div>
 
-            {(type === 'app' || type === 'github') && url ? (
+            {showExternalLink ? (
                 <a
                     href={url}
                     target="_blank"
@@ -151,10 +214,18 @@ export default function Card({
                 </a>
             ) : (
                 <button
+                    type="button"
                     onClick={handleCopy}
                     className="block w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
-                    {copied ? <span className="text-green-500 font-bold">Copied!</span> : "Copy Content"}
+                    {copied ? (
+                        <span className="text-green-500 font-bold">Copied!</span>
+                    ) : (
+                        <span className="inline-flex items-center justify-center gap-1">
+                            <Copy className="w-4 h-4" />
+                            <span>Copy Content</span>
+                        </span>
+                    )}
                 </button>
             )}
         </div>
