@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Search from './Search';
 import FilterBar from './FilterBar';
 import Card from './Card';
-import ThemeToggle from './ThemeToggle';
+import FloatingActions from './FloatingActions';
 import { Copy, CheckCircle2, ChevronDown } from 'lucide-react';
 import hljs from 'highlight.js';
 
@@ -171,11 +171,8 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
   return (
     <div className="container mx-auto px-2 py-12">
       <header className="text-center mb-12">
-        <div className="flex justify-end mb-4 gap-2">
-          <ThemeToggle />
-        </div>
         <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4 tracking-tight">
-          CardFlow
+          Insider Flow
         </h1>
         <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
           A minimalist masonry card site for your prompts, scripts, and apps.
@@ -348,6 +345,12 @@ export default function Main({ initialPosts, allTypes }: MainProps) {
           No cards found matching your criteria.
         </div>
       )}
+
+      <footer className="mt-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        Built with Astro
+      </footer>
+
+      <FloatingActions />
     </div>
   );
 }
