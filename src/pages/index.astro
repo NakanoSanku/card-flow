@@ -45,8 +45,9 @@ marked.use({ renderer });
 // Fetch all posts
 const posts = await getCollection('posts');
 
-// Get all unique tags
-const allTags = [...new Set(posts.flatMap(post => post.data.tags))].sort();
+// Get all unique card types (ensure all supported types, even if no posts yet)
+const baseTypes = ['prompt', 'script', 'video', 'app', 'github', 'website'];
+const allTypes = [...new Set([...baseTypes, ...posts.map(post => post.data.type)])];
 
 // Pre-render content to HTML
 const renderedPosts = await Promise.all(posts.map(async (post) => {
@@ -59,5 +60,5 @@ const renderedPosts = await Promise.all(posts.map(async (post) => {
 ---
 
 <Layout>
-	<Main client:load initialPosts={renderedPosts} allTags={allTags} />
+	<Main client:load initialPosts={renderedPosts} allTypes={allTypes} />
 </Layout>

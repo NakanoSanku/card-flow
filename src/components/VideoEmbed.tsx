@@ -40,17 +40,17 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
 
     if (!embedUrl) {
         return (
-            <div className="w-full aspect-video bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
+            <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 flex items-center justify-center">
                 <p className="text-zinc-500 text-sm">Invalid video URL</p>
             </div>
         );
     }
 
     return (
-        <div className="w-full aspect-video">
+        <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40">
             <iframe
                 src={embedUrl}
-                className="w-full h-full rounded-lg"
+                className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 title="Video embed"

@@ -1,233 +1,323 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Copy, ExternalLink, Terminal, Image as ImageIcon, FileText, Github, Globe } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import VideoEmbed from './VideoEmbed';
-import GithubRepoInfo from './GithubRepoInfo';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ExternalLink,
+  Terminal,
+  Image as ImageIcon,
+  FileText,
+  Github,
+  Globe,
+  ShoppingCart,
+  CheckCircle2,
+  Copy,
+} from "lucide-react";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import VideoEmbed from "./VideoEmbed";
+import GithubRepoInfo from "./GithubRepoInfo";
 
 function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs));
 }
 
+const colorClasses: Record<string, string> = {
+  red: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
+  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+  green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+  yellow: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
+  orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
+  purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+  zinc: "bg-zinc-100 dark:bg-zinc-900/30 text-zinc-600 dark:text-zinc-400",
+};
+
 interface CardProps {
-    slug?: string;
-    onHeightChange?: (slug: string, height: number) => void;
-    title: string;
-    date?: Date;
-    tags: string[];
-    type: 'prompt' | 'script' | 'app' | 'github' | 'website';
-    icon?: string;
-    color?: string;
-    image?: string;
-    video?: string;
-    url?: string;
-    content: string; // HTML content from Markdown
-    selectable?: boolean;
-    selected?: boolean;
-    onSelectedChange?: (selected: boolean) => void;
-    wingetUnsupported?: boolean;
+  slug?: string;
+  onHeightChange?: (slug: string, height: number) => void;
+  title: string;
+  date?: Date;
+  type: "prompt" | "script" | "video" | "app" | "github" | "website";
+  icon?: string;
+  color?: string;
+  image?: string;
+  video?: string;
+  url?: string;
+  content: string; // HTML content from Markdown
+  selectable?: boolean;
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
+  wingetUnsupported?: boolean;
 }
 
 export default function Card({
-    slug,
-    onHeightChange,
-    title,
-    date,
-    tags,
-    type,
-    icon,
-    color,
-    image,
-    video,
-    url,
-    content,
-    selectable,
-    selected,
-    onSelectedChange,
-    wingetUnsupported,
+  slug,
+  onHeightChange,
+  title,
+  date,
+  type,
+  icon,
+  color,
+  image,
+  video,
+  url,
+  content,
+  selectable,
+  selected,
+  onSelectedChange,
+  wingetUnsupported,
 }: CardProps) {
-    const [copied, setCopied] = useState(false);
-    const cardRef = useRef<HTMLDivElement | null>(null);
+  const [copied, setCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
-    const getAutoIconUrl = (link?: string | null): string | null => {
-        if (!link) return null;
-        try {
-            const urlObj = new URL(link);
-            return `${urlObj.origin}/favicon.ico`;
-        } catch {
-            return null;
-        }
+  const getAutoIconUrl = (link?: string | null): string | null => {
+    if (!link) return null;
+    try {
+      const urlObj = new URL(link);
+      return `${urlObj.origin}/favicon.ico`;
+    } catch {
+      return null;
+    }
+  };
+
+  const autoIconUrl = !icon && type !== "github" ? getAutoIconUrl(url) : null;
+
+  useEffect(() => {
+    if (!slug || !onHeightChange || typeof window === "undefined") return;
+    const element = cardRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+
+    const notify = () => {
+      const rect = element.getBoundingClientRect();
+      if (rect.height) {
+        onHeightChange(slug, rect.height);
+      }
     };
 
-    const autoIconUrl = !icon && type !== 'github' ? getAutoIconUrl(url) : null;
+    notify();
 
-    useEffect(() => {
-        if (!slug || !onHeightChange || typeof window === 'undefined') return;
-        const element = cardRef.current;
-        if (!element || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      notify();
+    });
 
-        const notify = () => {
-            const rect = element.getBoundingClientRect();
-            if (rect.height) {
-                onHeightChange(slug, rect.height);
-            }
-        };
+    observer.observe(element);
 
-        notify();
+    return () => observer.disconnect();
+  }, [slug, onHeightChange]);
 
-        const observer = new ResizeObserver(() => {
-            notify();
-        });
+  const handleCopy = () => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const codeBlock = tempDiv.querySelector("code");
+    const text = codeBlock
+      ? codeBlock.textContent ?? ""
+      : tempDiv.textContent ?? "";
 
-        observer.observe(element);
+    if (!text) return;
 
-        return () => observer.disconnect();
-    }, [slug, onHeightChange]);
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    const handleCopy = () => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = content;
-        const codeBlock = tempDiv.querySelector('code');
-        const text = codeBlock ? codeBlock.textContent ?? '' : tempDiv.textContent ?? '';
+  const Icon = () => {
+    if (icon && (icon.startsWith("http") || icon.startsWith("/"))) {
+      return (
+        <img
+          src={icon}
+          alt={title}
+          className="w-6 h-6 rounded-sm object-cover"
+        />
+      );
+    }
+    if (autoIconUrl) {
+      return (
+        <img
+          src={autoIconUrl}
+          alt={title}
+          className="w-6 h-6 rounded-sm object-cover"
+        />
+      );
+    }
+    if (icon) return <span className="text-xl">{icon}</span>;
 
-        if (!text) return;
+    switch (type) {
+      case "prompt":
+        return <ImageIcon className="w-5 h-5" />;
+      case "script":
+        return <Terminal className="w-5 h-5" />;
+      case "video":
+        return <ImageIcon className="w-5 h-5" />;
+      case "app":
+        return <ExternalLink className="w-5 h-5" />;
+      case "website":
+        return <Globe className="w-5 h-5" />;
+      case "github":
+        return <Github className="w-5 h-5" />;
+      default:
+        return <FileText className="w-5 h-5" />;
+    }
+  };
 
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+  const showExternalLink =
+    (type === "app" || type === "github" || type === "website") && !!url;
 
-    const Icon = () => {
-        if (icon && (icon.startsWith('http') || icon.startsWith('/'))) {
-            return <img src={icon} alt={title} className="w-6 h-6 rounded-sm object-cover" />;
-        }
-        if (autoIconUrl) {
-            return <img src={autoIconUrl} alt={title} className="w-6 h-6 rounded-sm object-cover" />;
-        }
-        if (icon) return <span className="text-xl">{icon}</span>;
+  const copyLabel =
+    type === "script"
+      ? "Copy Script"
+      : type === "prompt"
+      ? "Copy Prompt"
+      : "Copy Content";
 
-        switch (type) {
-            case 'prompt':
-                return <ImageIcon className="w-5 h-5" />;
-            case 'script':
-                return <Terminal className="w-5 h-5" />;
-            case 'app':
-                return <ExternalLink className="w-5 h-5" />;
-            case 'website':
-                return <Globe className="w-5 h-5" />;
-            case 'github':
-                return <Github className="w-5 h-5" />;
-            default:
-                return <FileText className="w-5 h-5" />;
-        }
-    };
+  const handleToggleSelect = () => {
+    if (!selectable || !onSelectedChange || wingetUnsupported) return;
+    onSelectedChange(!selected);
+  };
 
-    const showExternalLink = (type === 'app' || type === 'github' || type === 'website') && !!url;
-
-    return (
-        <div
-            ref={cardRef}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
-        >
-            <div className="p-4 pb-2">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <div
-                            className={cn(
-                                'p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800',
-                                color &&
-                                `bg-${color}-100 dark:bg-${color}-900/30 text-${color}-600 dark:text-${color}-400`,
-                            )}
-                        >
-                            <Icon />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">{title}</h3>
-                            {date && (
-                                <p className="text-xs text-zinc-500 mt-0.5">
-                                    {new Date(date).toLocaleDateString()}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                        {type === 'app' && wingetUnsupported && (
-                            <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                                不支持 winget 安装
-                            </span>
-                        )}
-                        {selectable && (
-                            <label className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400 select-none">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500"
-                                    checked={!!selected}
-                                    onChange={(e) => onSelectedChange?.(e.target.checked)}
-                                />
-                                <span>安装</span>
-                            </label>
-                        )}
-                    </div>
-                </div>
+  return (
+    <div
+      ref={cardRef}
+      className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
+    >
+      <div className="p-4 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800",
+                color && colorClasses[color],
+              )}
+            >
+              <Icon />
             </div>
-
-            {image && (
-                <div className="w-full">
-                    <img src={image} alt={title} className="w-full h-auto object-cover" />
-                </div>
-            )}
-
-            {video && (
-                <div className="p-4 pb-2">
-                    <VideoEmbed url={video} />
-                </div>
-            )}
-
-            <div className="p-4 pt-2 flex-1">
-                {type === 'github' && url && <GithubRepoInfo url={url} />}
-
-                <div
-                    className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"
-                    dangerouslySetInnerHTML={{ __html: content }}
-                />
-
-                <div className="flex flex-wrap gap-1.5 mt-auto">
-                    {tags.map((tag) => (
-                        <span
-                            key={tag}
-                            className="px-2 py-0.5 text-xs rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                        >
-                            #{tag}
-                        </span>
-                    ))}
-                </div>
+            <div>
+              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
+                {title}
+              </h3>
+              {date && (
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  {new Date(date).toLocaleDateString()}
+                </p>
+              )}
             </div>
-
-            {showExternalLink ? (
-                <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                    {type === 'github' ? 'View on GitHub →' : 'Visit Website →'}
-                </a>
-            ) : (
-                <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="block w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                    {copied ? (
-                        <span className="text-green-500 font-bold">Copied!</span>
-                    ) : (
-                        <span className="inline-flex items-center justify-center gap-1">
-                            <Copy className="w-4 h-4" />
-                            <span>Copy Content</span>
-                        </span>
-                    )}
-                </button>
-            )}
+          </div>
+          <div className="flex flex-col items-end gap-1" />
         </div>
-    );
+      </div>
+
+      {image && (
+        <div className="w-full px-4">
+          <div className="w-full rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40">
+            <img src={image} alt={title} className="w-full h-auto object-cover" />
+          </div>
+        </div>
+      )}
+
+      {video && (
+        <div className="p-4 pb-2">
+          <VideoEmbed url={video} />
+        </div>
+      )}
+
+      <div className="p-4 pt-2 flex-1">
+        {type === "github" && url && <GithubRepoInfo url={url} />}
+
+        <div
+          className="prose prose-sm dark:prose-invert max-w-none mb-4 text-zinc-600 dark:text-zinc-300 [&_pre]:whitespace-pre-wrap [&_pre]:break-words [&_code]:whitespace-pre-wrap [&_code]:break-words"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+
+      </div>
+
+      {type === "video" && (video || url) ? (
+        <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+          <a
+            href={video || url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            <span>Watch Video</span>
+          </a>
+        </div>
+      ) : type === "app" && showExternalLink ? (
+        <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+          {wingetUnsupported ? (
+            <span className="text-xs md:text-sm text-zinc-400 dark:text-zinc-500">
+              Not available on Winget
+            </span>
+          ) : (
+            selectable &&
+            onSelectedChange && (
+              <button
+                type="button"
+                onClick={handleToggleSelect}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1 px-0 py-0 text-xs md:text-sm font-medium bg-transparent transition-colors",
+                  selected
+                    ? "text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
+                    : "text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300",
+                )}
+              >
+                {selected ? (
+                  <CheckCircle2 className="w-4 h-4" />
+                ) : (
+                  <ShoppingCart className="w-4 h-4" />
+                )}
+                <span>{selected ? "Added" : "Add to install list"}</span>
+              </button>
+            )
+          )}
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            <ExternalLink className="w-4 h-4" aria-hidden="true" />
+            <span>Visit Website</span>
+          </a>
+        </div>
+      ) : showExternalLink ? (
+        <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            {type === "github" ? (
+              <>
+                <Github className="w-4 h-4" aria-hidden="true" />
+                <span>View on GitHub</span>
+              </>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                <span>Visit Website</span>
+              </>
+            )}
+          </a>
+        </div>
+      ) : (
+        <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className={cn(
+              "ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium transition-colors",
+              copied
+                ? "text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400",
+            )}
+          >
+            {copied ? (
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <Copy className="w-4 h-4" aria-hidden="true" />
+            )}
+            <span>{copied ? "Copied!" : copyLabel}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

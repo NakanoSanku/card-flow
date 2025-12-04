@@ -2,7 +2,7 @@
 title: "Build a REST API with Node.js"
 date: 2024-01-15
 tags: ["Tutorial", "Node.js", "API", "Backend"]
-type: "script"
+type: "video"
 icon: "📺"
 color: "blue"
 video: "https://www.youtube.com/watch?v=GWPhcwiefAw"

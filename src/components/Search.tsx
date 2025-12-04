@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import Fuse from 'fuse.js';
+import React, { useEffect, useRef, useState } from 'react';
 import { Search as SearchIcon } from 'lucide-react';
+import Fuse from 'fuse.js';
 
 interface SearchProps {
     posts: any[];
@@ -9,13 +9,44 @@ interface SearchProps {
 
 export default function Search({ posts, onSearch }: SearchProps) {
     const [query, setQuery] = useState('');
+    const fuseRef = useRef<Fuse<any> | null>(null);
 
-    const fuse = useMemo(() => {
-        return new Fuse(posts, {
-            keys: ['data.title', 'data.tags', 'body'],
-            threshold: 0.3,
+    useEffect(() => {
+        const docs = posts.map((post) => {
+            const plainBody =
+                typeof post.body === 'string'
+                    ? post.body.replace(/<[^>]+>/g, ' ')
+                    : '';
+            return {
+                ...post,
+                __text: `${post.data?.title ?? ''} ${post.data?.type ?? ''} ${plainBody}`,
+            };
+        });
+
+        fuseRef.current = new Fuse(docs, {
+            keys: ['__text'],
+            threshold: 0.35,
+            ignoreLocation: true,
         });
     }, [posts]);
+
+    const runFallbackSearch = (value: string) => {
+        const lower = value.toLowerCase();
+        const fallback = posts.filter((post) => {
+            const title = (post.data?.title ?? '').toLowerCase();
+            const bodyText =
+                typeof post.body === 'string'
+                    ? post.body.replace(/<[^>]+>/g, ' ').toLowerCase()
+                    : '';
+            const type = (post.data?.type ?? '').toLowerCase();
+            return (
+                title.includes(lower) ||
+                bodyText.includes(lower) ||
+                type.includes(lower)
+            );
+        });
+        onSearch(fallback);
+    };
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -26,8 +57,14 @@ export default function Search({ posts, onSearch }: SearchProps) {
             return;
         }
 
-        const results = fuse.search(value).map(result => result.item);
-        onSearch(results);
+        const fuse = fuseRef.current;
+        if (!fuse) {
+            runFallbackSearch(value);
+            return;
+        }
+
+        const results = fuse.search(value);
+        onSearch(results.map((r) => r.item));
     };
 
     return (

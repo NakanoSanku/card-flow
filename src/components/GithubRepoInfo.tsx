@@ -84,11 +84,10 @@ export default function GithubRepoInfo({ url }: GithubRepoInfoProps) {
                 </p>
             )}
             <div className="flex flex-wrap gap-2 text-[0.65rem]">
-                <span>⭐ {repo.stargazers_count}</span>
-                <span>🍴 {repo.forks_count}</span>
-                <span>🐛 {repo.open_issues_count}</span>
+                <span>Stars: {repo.stargazers_count}</span>
+                <span>Forks: {repo.forks_count}</span>
+                <span>Issues: {repo.open_issues_count}</span>
             </div>
         </div>
     );
 }
-
