@@ -30,6 +30,16 @@ const formatStarCount = (count: number): string => {
   return count.toLocaleString();
 };
 
+const isGithubUrl = (link?: string | null): boolean => {
+  if (!link) return false;
+  try {
+    const parsed = new URL(link);
+    return parsed.hostname.includes("github.com");
+  } catch {
+    return false;
+  }
+};
+
 const colorClasses: Record<string, string> = {
   red: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
   blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
@@ -79,6 +89,8 @@ export default function Card({
   const [githubTitle, setGithubTitle] = useState<string | null>(null);
   const [githubRepo, setGithubRepo] = useState<GithubRepoData | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const isGithubCard = type === "github" && isGithubUrl(url);
+  const isMcpCard = type === "mcp";
 
   const getAutoIconUrl = (link?: string | null): string | null => {
     if (!link) return null;
@@ -99,7 +111,7 @@ export default function Card({
       : null;
 
   const githubAvatarUrl = (() => {
-    if ((type !== "github" && type !== "mcp") || !url) return null;
+    if (!isGithubCard || !url) return null;
     try {
       const parsed = new URL(url);
       if (!parsed.hostname.includes("github.com")) return null;
@@ -166,7 +178,7 @@ export default function Card({
       );
     }
 
-    if (!icon && githubAvatarUrl) {
+    if (!icon && githubAvatarUrl && type === "github") {
       return (
         <img
           src={githubAvatarUrl}
@@ -201,8 +213,9 @@ export default function Card({
       case "website":
         return <Globe className="w-5 h-5" />;
       case "github":
-      case "mcp":
         return <Github className="w-5 h-5" />;
+      case "mcp":
+        return <Terminal className="w-5 h-5" />;
       default:
         return <FileText className="w-5 h-5" />;
     }
@@ -229,7 +242,7 @@ export default function Card({
   };
 
   const displayTitle =
-    (type === "github" || type === "mcp") && githubTitle ? githubTitle : title;
+    type === "github" && githubTitle ? githubTitle : title;
 
   return (
     <div
@@ -277,7 +290,7 @@ export default function Card({
       )}
 
       <div className="p-4 pt-2 flex-1">
-        {(type === "github" || type === "mcp") && url && (
+        {isGithubCard && url && (
           <GithubRepoInfo
             url={url}
             onLoaded={(data) => {
@@ -345,7 +358,7 @@ export default function Card({
           </a>
         </div>
       ) : showExternalLink ? (
-        type === "github" || type === "mcp" ? (
+        isGithubCard ? (
           <div className="flex items-center justify-between w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center gap-4 text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
               {githubRepo?.language && (
@@ -373,6 +386,21 @@ export default function Card({
             >
               <Github className="w-4 h-4" aria-hidden="true" />
               <span>View on GitHub</span>
+            </a>
+          </div>
+        ) : isMcpCard ? (
+          <div className="flex items-center w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100/80 dark:bg-zinc-900/70 text-zinc-600 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-700/80">
+              MCP Server
+            </span>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400"
+            >
+              <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              <span>View MCP Docs</span>
             </a>
           </div>
         ) : (
