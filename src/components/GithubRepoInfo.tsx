@@ -1,90 +1,62 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import githubMeta from "../data/github-meta.json";
+
 export type GithubRepoData = {
-    full_name: string;
-    description: string | null;
-    stargazers_count: number;
-    forks_count: number;
-    open_issues_count: number;
-    language: string | null;
-    html_url: string;
+  full_name: string;
+  description: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  language: string | null;
+  html_url: string;
 };
 
+type GithubMetaMap = Record<string, GithubRepoData>;
+
 interface GithubRepoInfoProps {
-    url: string;
-    onLoaded?: (repo: GithubRepoData) => void;
+  url: string;
+  onLoaded?: (repo: GithubRepoData) => void;
+}
+
+function getRepoKeyFromUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes("github.com")) return null;
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    if (parts.length < 2) return null;
+    const [owner, repo] = parts;
+    return `${owner}/${repo}`;
+  } catch {
+    return null;
+  }
 }
 
 export default function GithubRepoInfo({ url, onLoaded }: GithubRepoInfoProps) {
-    const [repo, setRepo] = useState<GithubRepoData | null>(null);
-    const [error, setError] = useState<string | null>(null);
+  const [repo, setRepo] = useState<GithubRepoData | null>(null);
 
-    useEffect(() => {
-        const headers: HeadersInit = {
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-        };
+  useEffect(() => {
+    const key = getRepoKeyFromUrl(url);
+    if (!key) return;
 
-        // Optional: user can set PUBLIC_GITHUB_TOKEN to avoid rate limiting.
-        const token =
-            (import.meta as any).env?.PUBLIC_GITHUB_TOKEN as string | undefined;
-        if (token) {
-            headers.Authorization = `Bearer ${token}`;
-        }
+    const map = githubMeta as GithubMetaMap;
+    const data = map[key];
+    if (!data) return;
 
-        try {
-            const parsed = new URL(url);
-            if (!parsed.hostname.includes('github.com')) return;
-
-            const parts = parsed.pathname.split('/').filter(Boolean);
-            if (parts.length < 2) return;
-
-            const [owner, repoName] = parts;
-            const apiUrl = `https://api.github.com/repos/${owner}/${repoName}`;
-
-            let cancelled = false;
-
-            fetch(apiUrl, { headers })
-                .then((res) => {
-                    if (!res.ok) {
-                        throw new Error(`GitHub API error: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then((data: GithubRepoData) => {
-                    if (!cancelled) {
-                        setRepo(data);
-                        if (onLoaded) {
-                            onLoaded(data);
-                        }
-                    }
-                })
-                .catch((err: Error) => {
-                    if (!cancelled) {
-                        setError(err.message);
-                    }
-                });
-
-            return () => {
-                cancelled = true;
-            };
-        } catch {
-            // Invalid URL, ignore
-        }
-        // Intentionally only depend on `url` here so we don't refetch
-        // every time the parent recreates the `onLoaded` callback.
-    }, [url]);
-
-    if (!repo || error) {
-        return null;
+    setRepo(data);
+    if (onLoaded) {
+      onLoaded(data);
     }
+  }, [url, onLoaded]);
 
-    return (
-        <div className="mb-3 text-xs text-zinc-600 dark:text-zinc-300">
-            {repo.description && (
-                <p className="mb-2 text-[0.85rem] leading-snug">
-                    {repo.description}
-                </p>
-            )}
-        </div>
-    );
+  if (!repo) {
+    return null;
+  }
+
+  return (
+    <div className="mb-3 text-xs text-zinc-600 dark:text-zinc-300">
+      {repo.description && (
+        <p className="mb-2 text-[0.85rem] leading-snug">{repo.description}</p>
+      )}
+    </div>
+  );
 }

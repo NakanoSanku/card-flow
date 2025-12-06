@@ -1,0 +1,92 @@
+{
+  "clash-verge-rev/clash-verge-rev": {
+    "full_name": "clash-verge-rev/clash-verge-rev",
+    "description": "A modern GUI client based on Tauri, designed to run in Windows, macOS and Linux for tailored proxy experience",
+    "stargazers_count": 85756,
+    "forks_count": 6319,
+    "open_issues_count": 78,
+    "language": "TypeScript",
+    "html_url": "https://github.com/clash-verge-rev/clash-verge-rev"
+  },
+  "anthropics/claude-code": {
+    "full_name": "anthropics/claude-code",
+    "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
+    "stargazers_count": 44779,
+    "forks_count": 3102,
+    "open_issues_count": 5478,
+    "language": "Shell",
+    "html_url": "https://github.com/anthropics/claude-code"
+  },
+  "router-for-me/CLIProxyAPI": {
+    "full_name": "router-for-me/CLIProxyAPI",
+    "description": "Wrap Gemini CLI, ChatGPT Codex, Claude Code, Qwen Code, iFlow as an OpenAI/Gemini/Claude/Codex compatible API service, allowing you to enjoy the free Gemini 2.5 Pro, GPT 5, Claude, Qwen model through API",
+    "stargazers_count": 2147,
+    "forks_count": 323,
+    "open_issues_count": 24,
+    "language": "Go",
+    "html_url": "https://github.com/router-for-me/CLIProxyAPI"
+  },
+  "google-gemini/gemini-cli": {
+    "full_name": "google-gemini/gemini-cli",
+    "description": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
+    "stargazers_count": 86017,
+    "forks_count": 9811,
+    "open_issues_count": 2304,
+    "language": "TypeScript",
+    "html_url": "https://github.com/google-gemini/gemini-cli"
+  },
+  "immortalwrt/immortalwrt": {
+    "full_name": "immortalwrt/immortalwrt",
+    "description": "An opensource OpenWrt variant for mainland China users.",
+    "stargazers_count": 9439,
+    "forks_count": 2955,
+    "open_issues_count": 40,
+    "language": "C",
+    "html_url": "https://github.com/immortalwrt/immortalwrt"
+  },
+  "Chevey339/kelivo": {
+    "full_name": "Chevey339/kelivo",
+    "description": "A Flutter LLM Chat Client. Support Android & iOS & Harmony Next.",
+    "stargazers_count": 855,
+    "forks_count": 94,
+    "open_issues_count": 72,
+    "language": "Dart",
+    "html_url": "https://github.com/Chevey339/kelivo"
+  },
+  "komari-monitor/komari": {
+    "full_name": "komari-monitor/komari",
+    "description": "A simple server monitor tool.",
+    "stargazers_count": 2864,
+    "forks_count": 269,
+    "open_issues_count": 44,
+    "language": "Go",
+    "html_url": "https://github.com/komari-monitor/komari"
+  },
+  "openai/codex": {
+    "full_name": "openai/codex",
+    "description": "Lightweight coding agent that runs in your terminal",
+    "stargazers_count": 52024,
+    "forks_count": 6601,
+    "open_issues_count": 911,
+    "language": "Rust",
+    "html_url": "https://github.com/openai/codex"
+  },
+  "alireza0/s-ui": {
+    "full_name": "alireza0/s-ui",
+    "description": "An advanced Web Panel • Built for SagerNet/Sing-Box",
+    "stargazers_count": 6334,
+    "forks_count": 1043,
+    "open_issues_count": 76,
+    "language": "Go",
+    "html_url": "https://github.com/alireza0/s-ui"
+  },
+  "hslr-s/sun-panel": {
+    "full_name": "hslr-s/sun-panel",
+    "description": "A server, NAS navigation panel, Homepage, browser homepage. | 一个服务器、NAS导航面板、Homepage、浏览器首页。",
+    "stargazers_count": 4716,
+    "forks_count": 542,
+    "open_issues_count": 124,
+    "language": "Vue",
+    "html_url": "https://github.com/hslr-s/sun-panel"
+  }
+}
