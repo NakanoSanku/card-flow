@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Copy,
   Star,
-  GitFork,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -20,6 +19,15 @@ import GithubRepoInfo, { type GithubRepoData } from "./GithubRepoInfo";
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+const formatStarCount = (count: number): string => {
+  if (count >= 1000) {
+    const value = count / 1000;
+    const formatted = value.toFixed(1);
+    return formatted.endsWith(".0") ? `${Math.round(value)}k` : `${formatted}k`;
+  }
+  return count.toLocaleString();
+};
 
 const colorClasses: Record<string, string> = {
   red: "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
@@ -36,7 +44,7 @@ interface CardProps {
   onHeightChange?: (slug: string, height: number) => void;
   title: string;
   date?: Date;
-  type: "prompt" | "script" | "video" | "app" | "github" | "website";
+  type: "prompt" | "script" | "video" | "app" | "github" | "website" | "mcp";
   icon?: string;
   color?: string;
   image?: string;
@@ -85,6 +93,20 @@ export default function Card({
   // This allows using an empty string in frontmatter to explicitly disable auto icon.
   const autoIconUrl =
     icon == null && type !== "github" ? getAutoIconUrl(url) : null;
+
+  const githubAvatarUrl = (() => {
+    if ((type !== "github" && type !== "mcp") || !url) return null;
+    try {
+      const parsed = new URL(url);
+      if (!parsed.hostname.includes("github.com")) return null;
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (parts.length === 0) return null;
+      const owner = parts[0];
+      return `https://github.com/${owner}.png?size=64`;
+    } catch {
+      return null;
+    }
+  })();
 
   useEffect(() => {
     if (!slug || !onHeightChange || typeof window === "undefined") return;
@@ -139,6 +161,17 @@ export default function Card({
         />
       );
     }
+
+    if (!icon && githubAvatarUrl) {
+      return (
+        <img
+          src={githubAvatarUrl}
+          alt={title}
+          className="w-6 h-6 rounded-sm object-cover"
+        />
+      );
+    }
+
     if (autoIconUrl) {
       return (
         <img
@@ -162,6 +195,7 @@ export default function Card({
       case "website":
         return <Globe className="w-5 h-5" />;
       case "github":
+      case "mcp":
         return <Github className="w-5 h-5" />;
       default:
         return <FileText className="w-5 h-5" />;
@@ -169,7 +203,11 @@ export default function Card({
   };
 
   const showExternalLink =
-    (type === "app" || type === "github" || type === "website") && !!url;
+    (type === "app" ||
+      type === "github" ||
+      type === "website" ||
+      type === "mcp") &&
+    !!url;
 
   const copyLabel =
     type === "script"
@@ -184,7 +222,7 @@ export default function Card({
   };
 
   const displayTitle =
-    type === "github" && githubTitle ? githubTitle : title;
+    (type === "github" || type === "mcp") && githubTitle ? githubTitle : title;
 
   return (
     <div
@@ -232,7 +270,7 @@ export default function Card({
       )}
 
       <div className="p-4 pt-2 flex-1">
-        {type === "github" && url && (
+        {(type === "github" || type === "mcp") && url && (
           <GithubRepoInfo
             url={url}
             onLoaded={(data) => {
@@ -300,7 +338,7 @@ export default function Card({
           </a>
         </div>
       ) : showExternalLink ? (
-        type === "github" ? (
+        type === "github" || type === "mcp" ? (
           <div className="flex items-center justify-between w-full py-2 px-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
             <div className="flex items-center gap-4 text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
               {githubRepo?.language && (
@@ -309,16 +347,16 @@ export default function Card({
                   <span>{githubRepo.language}</span>
                 </span>
               )}
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                  <span className="tabular-nums">{githubRepo?.stargazers_count.toLocaleString()}</span>
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <GitFork className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span className="tabular-nums">{githubRepo?.forks_count.toLocaleString()}</span>
-                </span>
-              </div>
+              {typeof githubRepo?.stargazers_count === "number" && (
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                    <span className="tabular-nums">
+                      {formatStarCount(githubRepo.stargazers_count)}
+                    </span>
+                  </span>
+                </div>
+              )}
             </div>
             <a
               href={url}

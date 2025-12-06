@@ -16,7 +16,8 @@ export default function FilterBar({ types, selectedType, onSelectType }: FilterB
         return 8;
     };
 
-    const [visibleCount, setVisibleCount] = useState(getVisibleCount);
+    // Start with a fixed value so SSR and client match, then adjust on mount.
+    const [visibleCount, setVisibleCount] = useState(6);
     const [startIndex, setStartIndex] = useState(0);
 
     useEffect(() => {

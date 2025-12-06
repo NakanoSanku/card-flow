@@ -5,7 +5,9 @@ const posts = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		date: z.date().optional(),
-		type: z.enum(['prompt', 'script', 'video', 'app', 'github', 'website']).default('prompt'),
+		type: z
+			.enum(['prompt', 'script', 'video', 'app', 'github', 'website', 'mcp'])
+			.default('prompt'),
 		icon: z.string().optional(),
 		color: z.string().optional(),
 		image: z.string().optional(),

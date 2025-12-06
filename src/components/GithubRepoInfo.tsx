@@ -19,6 +19,18 @@ export default function GithubRepoInfo({ url, onLoaded }: GithubRepoInfoProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        const headers: HeadersInit = {
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+        };
+
+        // Optional: user can set PUBLIC_GITHUB_TOKEN to avoid rate limiting.
+        const token =
+            (import.meta as any).env?.PUBLIC_GITHUB_TOKEN as string | undefined;
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
         try {
             const parsed = new URL(url);
             if (!parsed.hostname.includes('github.com')) return;
@@ -31,7 +43,7 @@ export default function GithubRepoInfo({ url, onLoaded }: GithubRepoInfoProps) {
 
             let cancelled = false;
 
-            fetch(apiUrl)
+            fetch(apiUrl, { headers })
                 .then((res) => {
                     if (!res.ok) {
                         throw new Error(`GitHub API error: ${res.status}`);
