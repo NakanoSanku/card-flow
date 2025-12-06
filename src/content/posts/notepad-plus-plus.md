@@ -1,12 +1,8 @@
 ---
 title: "Notepad++"
-date: 2025-12-04
-tags: ["Development", "Editor"]
 type: "app"
-icon: "https://notepad-plus-plus.org/images/logo.svg"
-color: "green"
-url: "https://notepad-plus-plus.org/"
+url: "https://notepad-plus-plus.org"
 wingetId: "Notepad++.Notepad++"
 ---
+经典的轻量级文本编辑器，启动极快，支持多标签、语法高亮和丰富插件，是替代记事本做快速编辑的首选
 
-A free source code editor and Notepad replacement that supports several languages. It is lightweight, fast, and highly customizable with plugins.

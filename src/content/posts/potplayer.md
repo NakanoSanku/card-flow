@@ -1,12 +1,7 @@
 ---
-title: "Potplayer"
-date: 2025-12-04
-tags: ["Media", "Player"]
+title: "PotPlayer"
 type: "app"
-icon: "▶️"
-color: "yellow"
-url: "https://potplayer.daum.net/"
+url: "https://potplayer.daum.net"
 wingetId: "Daum.PotPlayer"
 ---
-
-A powerful multimedia player that supports a wide variety of media formats. It is lightweight, customizable, and includes features like 3D support and screen recording.
+一款功能强大的免费多媒体播放器，支持多种视频音频格式，播放流畅且高度可定制

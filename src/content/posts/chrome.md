@@ -1,12 +1,8 @@
 ---
-title: "Chrome"
-date: 2025-12-04
-tags: ["Browser", "Productivity"]
+title: "Google Chrome"
 type: "app"
-icon: "🌐"
-color: "blue"
-url: "https://www.google.com/chrome/"
+url: "https://www.google.com/chrome"
 wingetId: "Google.Chrome"
 ---
+市面上最主流的桌面浏览器之一，扩展生态极其丰富，跨平台同步书签与密码，适合作为日常上网和开发调试的主力浏览器
 
-The fast, secure, and customizable web browser built by Google. It features a vast library of extensions, seamless syncing across devices, and robust developer tools.

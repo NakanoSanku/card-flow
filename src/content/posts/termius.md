@@ -1,12 +1,8 @@
 ---
 title: "Termius"
-date: 2025-12-04
-tags: ["Development", "SSH"]
 type: "app"
-icon: "💻"
-color: "purple"
-url: "https://termius.com/"
+icon: "https://framerusercontent.com/images/OlBUvY5A09h21oIVla6GW6yo3Y.svg"
+url: "https://termius.com"
 wingetId: "Termius.Termius"
 ---
-
-A modern SSH client that lets you organize, access, and manage your servers. It features secure data sync across all devices, snippet sharing, and a beautiful interface.
+一款现代化的 SSH 客户端，支持多端同步、主机分组、命令片段和 SFTP，可在桌面和移动端统一管理你的服务器连接

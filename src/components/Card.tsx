@@ -81,7 +81,10 @@ export default function Card({
     }
   };
 
-  const autoIconUrl = !icon && type !== "github" ? getAutoIconUrl(url) : null;
+  // Only auto-generate favicon when icon is not provided at all.
+  // This allows using an empty string in frontmatter to explicitly disable auto icon.
+  const autoIconUrl =
+    icon == null && type !== "github" ? getAutoIconUrl(url) : null;
 
   useEffect(() => {
     if (!slug || !onHeightChange || typeof window === "undefined") return;
@@ -122,7 +125,12 @@ export default function Card({
   };
 
   const Icon = () => {
-    if (icon && (icon.startsWith("http") || icon.startsWith("/"))) {
+    if (
+      icon &&
+      (icon.startsWith("http") ||
+        icon.startsWith("/") ||
+        icon.startsWith("data:"))
+    ) {
       return (
         <img
           src={icon}

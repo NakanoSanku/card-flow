@@ -58,7 +58,9 @@ export default function GithubRepoInfo({ url, onLoaded }: GithubRepoInfoProps) {
         } catch {
             // Invalid URL, ignore
         }
-    }, [url, onLoaded]);
+        // Intentionally only depend on `url` here so we don't refetch
+        // every time the parent recreates the `onLoaded` callback.
+    }, [url]);
 
     if (!repo || error) {
         return null;

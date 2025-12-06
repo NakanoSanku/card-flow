@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Preview at <http://localhost:4321>. Additional scripts:
+Preview at [http://localhost:4321](http://localhost:4321). Additional scripts:
 
 - `npm run build` — build static output to `dist`.
 - `npm run preview` — serve the production build locally.
@@ -47,7 +47,6 @@ All cards share the same frontmatter schema defined in `src/content/config.ts`:
 
 - `title` (string)
 - `date` (optional date)
-- `tags` (string array, optional)
 - `type` (`prompt` | `script` | `video` | `app` | `github` | `website`)
 - `icon`, `color`, `image`, `video`, `url` (optional strings)
 - `wingetId` (optional, used for batch installs on `app` cards)

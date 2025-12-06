@@ -5,6 +5,16 @@ interface VideoEmbedProps {
 }
 
 export default function VideoEmbed({ url }: VideoEmbedProps) {
+    const [isActive, setIsActive] = React.useState(false);
+
+    const isImageUrl = (mediaUrl: string): boolean => {
+        return /\.(gif|png|jpe?g|webp|avif)$/i.test(mediaUrl);
+    };
+
+    const isVideoFileUrl = (mediaUrl: string): boolean => {
+        return /\.(mp4|webm|ogg)$/i.test(mediaUrl);
+    };
+
     const getEmbedUrl = (videoUrl: string): string | null => {
         try {
             const urlObj = new URL(videoUrl);
@@ -30,6 +40,11 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
                 }
             }
 
+            // If it's a direct media file link, we handle it separately
+            if (isImageUrl(videoUrl) || isVideoFileUrl(videoUrl)) {
+                return null;
+            }
+
             return null;
         } catch {
             return null;
@@ -39,9 +54,49 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
     const embedUrl = getEmbedUrl(url);
 
     if (!embedUrl) {
+        // Direct image (including GIF) support
+        if (isImageUrl(url)) {
+            return (
+                <div className="w-full rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 flex items-center justify-center">
+                    <img
+                        src={url}
+                        alt="Embedded media"
+                        className="w-full h-auto object-contain"
+                    />
+                </div>
+            );
+        }
+
+        // Direct video file support
+        if (isVideoFileUrl(url)) {
+            return (
+                <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 flex items-center justify-center">
+                    <video
+                        src={url}
+                        className="w-full h-full"
+                        controls
+                    />
+                </div>
+            );
+        }
+
         return (
             <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 flex items-center justify-center">
                 <p className="text-zinc-500 text-sm">Invalid video URL</p>
+            </div>
+        );
+    }
+
+    if (!isActive) {
+        return (
+            <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 flex items-center justify-center">
+                <button
+                    type="button"
+                    onClick={() => setIsActive(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-zinc-900/80 text-white px-4 py-2 text-xs md:text-sm font-medium hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-50 dark:focus:ring-offset-zinc-900"
+                >
+                    <span>点击播放视频</span>
+                </button>
             </div>
         );
     }
@@ -51,7 +106,8 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
             <iframe
                 src={embedUrl}
                 className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy"
                 allowFullScreen
                 title="Video embed"
             />
