@@ -15,6 +15,10 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
         return /\.(mp4|webm|ogg)$/i.test(mediaUrl);
     };
 
+    const isAudioFileUrl = (mediaUrl: string): boolean => {
+        return /\.(mp3|m4a|aac|flac|wav|opus)$/i.test(mediaUrl);
+    };
+
     const getEmbedUrl = (videoUrl: string): string | null => {
         try {
             const urlObj = new URL(videoUrl);
@@ -41,7 +45,7 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
             }
 
             // If it's a direct media file link, we handle it separately
-            if (isImageUrl(videoUrl) || isVideoFileUrl(videoUrl)) {
+            if (isImageUrl(videoUrl) || isVideoFileUrl(videoUrl) || isAudioFileUrl(videoUrl)) {
                 return null;
             }
 
@@ -74,6 +78,19 @@ export default function VideoEmbed({ url }: VideoEmbedProps) {
                     <video
                         src={url}
                         className="w-full h-full"
+                        controls
+                    />
+                </div>
+            );
+        }
+
+        // Direct audio file support
+        if (isAudioFileUrl(url)) {
+            return (
+                <div className="w-full rounded-lg overflow-hidden border border-zinc-200/60 dark:border-zinc-700/80 bg-zinc-50/80 dark:bg-zinc-900/40 px-4 py-3 flex items-center">
+                    <audio
+                        src={url}
+                        className="w-full"
                         controls
                     />
                 </div>

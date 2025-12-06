@@ -46,7 +46,7 @@ marked.use({ renderer });
 const posts = await getCollection('posts');
 
 // Get all unique card types (ensure all supported types, even if no posts yet)
-const baseTypes = ['prompt', 'script', 'video', 'app', 'github', 'website'];
+const baseTypes = ['prompt', 'script', 'video', 'app', 'github', 'website', 'music'];
 const allTypes = [...new Set([...baseTypes, ...posts.map(post => post.data.type)])];
 
 // Pre-render content to HTML

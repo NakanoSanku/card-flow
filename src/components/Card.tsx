@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Copy,
   Star,
+  Music2,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -44,7 +45,7 @@ interface CardProps {
   onHeightChange?: (slug: string, height: number) => void;
   title: string;
   date?: Date;
-  type: "prompt" | "script" | "video" | "app" | "github" | "website" | "mcp";
+  type: "prompt" | "script" | "video" | "app" | "github" | "website" | "music" | "mcp";
   icon?: string;
   color?: string;
   image?: string;
@@ -89,10 +90,13 @@ export default function Card({
     }
   };
 
-  // Only auto-generate favicon when icon is not provided at all.
-  // This allows using an empty string in frontmatter to explicitly disable auto icon.
+  // Only auto-generate favicon when icon is not provided at all,
+  // and for non-GitHub / non-music cards. Music cards either use
+  // a custom cover (icon) or the generic music icon.
   const autoIconUrl =
-    icon == null && type !== "github" ? getAutoIconUrl(url) : null;
+    icon == null && type !== "github" && type !== "music"
+      ? getAutoIconUrl(url)
+      : null;
 
   const githubAvatarUrl = (() => {
     if ((type !== "github" && type !== "mcp") || !url) return null;
@@ -190,6 +194,8 @@ export default function Card({
         return <Terminal className="w-5 h-5" />;
       case "video":
         return <ImageIcon className="w-5 h-5" />;
+      case "music":
+        return <Music2 className="w-5 h-5" />;
       case "app":
         return <ExternalLink className="w-5 h-5" />;
       case "website":
@@ -206,6 +212,7 @@ export default function Card({
     (type === "app" ||
       type === "github" ||
       type === "website" ||
+      type === "music" ||
       type === "mcp") &&
     !!url;
 
